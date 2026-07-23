@@ -14,7 +14,11 @@ import Configurator from '@/pages/Configurator';
 import About from '@/pages/About';
 import Contact from '@/pages/Contact';
 import Delivery from '@/pages/Delivery';
-// Add page imports here
+import Impressum from '@/pages/Impressum';
+import Datenschutz from '@/pages/Datenschutz';
+import AGB from '@/pages/AGB';
+import Widerruf from '@/pages/Widerruf';
+import Zahlungsarten from '@/pages/Zahlungsarten';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -54,6 +58,11 @@ const AuthenticatedApp = () => {
         <Route path="/lieferung-aufstellung" element={<Delivery />} />
         <Route path="/standorte" element={<About />} />
         <Route path="/faq" element={<Home />} />
+        <Route path="/impressum" element={<Impressum />} />
+        <Route path="/datenschutz" element={<Datenschutz />} />
+        <Route path="/agb" element={<AGB />} />
+        <Route path="/widerruf" element={<Widerruf />} />
+        <Route path="/zahlungsarten" element={<Zahlungsarten />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
