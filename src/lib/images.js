@@ -1,5 +1,6 @@
 // Centralized image assets for Baltes Container
 export const IMAGES = {
+  logo: "https://media.base44.com/images/public/6a617cd5481a171d302809dc/d4d325cdf_Baltes-container-Small-logo.svg",
   hero: "https://media.base44.com/images/public/6a617cd5481a171d302809dc/98aac06ee_generated_f18605d4.png",
   container20: "https://media.base44.com/images/public/6a617cd5481a171d302809dc/5882607a0_generated_5d05e565.png",
   container40hc: "https://media.base44.com/images/public/6a617cd5481a171d302809dc/f4b6c90fc_generated_9d76972a.png",

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { Menu, X, Search, ShoppingCart, Phone, ChevronDown, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { IMAGES } from "@/lib/images";
 
 const NAV = [
   { label: "Startseite", to: "/" },
@@ -39,12 +40,7 @@ export default function Header() {
       {/* Main header */}
       <div className="max-w-terminal mx-auto px-6 flex items-center justify-between h-16 md:h-20">
         <Link to="/" className="flex items-center gap-2.5 shrink-0" aria-label="Baltes Container Startseite">
-          <div className="flex flex-col">
-            <span className="font-heading text-xl md:text-2xl font-extrabold tracking-tight leading-none">
-              BALTES<span className="text-primary">CONTAINER</span>
-            </span>
-            <span className="font-mono-tech text-[9px] uppercase tracking-[0.25em] text-muted-foreground mt-1">Seit 1983</span>
-          </div>
+          <img src={IMAGES.logo} alt="Baltes Container" className="h-9 md:h-11 w-auto" />
         </Link>
 
         <nav className="hidden lg:flex items-center gap-1">

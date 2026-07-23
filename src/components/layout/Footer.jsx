@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Phone, Mail, MapPin, Clock } from "lucide-react";
+import { IMAGES } from "@/lib/images";
 
 const FOOTER_NAV = {
   container: {
@@ -48,10 +49,7 @@ export default function Footer() {
           {/* Company */}
           <div>
             <div className="mb-4">
-              <span className="font-heading text-xl font-extrabold tracking-tight">
-                BALTES<span className="text-primary">CONTAINER</span>
-              </span>
-              <div className="font-mono-tech text-[9px] uppercase tracking-[0.25em] text-muted-foreground mt-1">Seit 1983</div>
+              <img src={IMAGES.logo} alt="Baltes Container" className="h-10 w-auto" />
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed mb-5">
               Seit 1983 Ihr Experte für neue und gebrauchte Container. Transparent beraten, sorgfältig ausgewählt und deutschlandweit geliefert.
