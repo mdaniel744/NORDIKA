@@ -1,0 +1,175 @@
+{
+  "name": "Product",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "sku": {
+      "type": "string"
+    },
+    "product_type": {
+      "type": "string",
+      "enum": [
+        "Seecontainer",
+        "Lagercontainer",
+        "High-Cube-Container",
+        "Open-Side-Container",
+        "K\u00fchlcontainer",
+        "Sondercontainer",
+        "B\u00fcrocontainer",
+        "Sanit\u00e4rcontainer"
+      ]
+    },
+    "size_ft": {
+      "type": "string",
+      "enum": [
+        "10",
+        "20",
+        "30",
+        "40",
+        "Sonstige"
+      ]
+    },
+    "condition": {
+      "type": "string",
+      "enum": [
+        "Neu",
+        "One-Trip",
+        "Gebraucht"
+      ]
+    },
+    "condition_grade": {
+      "type": "string",
+      "enum": [
+        "WWT",
+        "CW",
+        "IICL",
+        "Neu",
+        "One-Trip"
+      ]
+    },
+    "color": {
+      "type": "string"
+    },
+    "depot": {
+      "type": "string"
+    },
+    "price_gross": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string",
+      "default": "EUR"
+    },
+    "availability": {
+      "type": "string",
+      "enum": [
+        "Auf Lager",
+        "Bestellbar",
+        "Ausverkauft"
+      ],
+      "default": "Auf Lager"
+    },
+    "quantity": {
+      "type": "integer",
+      "default": 1
+    },
+    "ext_length_mm": {
+      "type": "integer"
+    },
+    "ext_width_mm": {
+      "type": "integer"
+    },
+    "ext_height_mm": {
+      "type": "integer"
+    },
+    "int_length_mm": {
+      "type": "integer"
+    },
+    "int_width_mm": {
+      "type": "integer"
+    },
+    "int_height_mm": {
+      "type": "integer"
+    },
+    "door_width_mm": {
+      "type": "integer"
+    },
+    "door_height_mm": {
+      "type": "integer"
+    },
+    "tare_weight_kg": {
+      "type": "integer"
+    },
+    "max_gross_weight_kg": {
+      "type": "integer"
+    },
+    "payload_kg": {
+      "type": "integer"
+    },
+    "volume_m3": {
+      "type": "number"
+    },
+    "csc_status": {
+      "type": "string",
+      "enum": [
+        "G\u00fcltig",
+        "Abgelaufen",
+        "Nicht erforderlich"
+      ]
+    },
+    "wwt_status": {
+      "type": "boolean"
+    },
+    "cargo_worthy": {
+      "type": "boolean"
+    },
+    "floor_type": {
+      "type": "string"
+    },
+    "lockbox": {
+      "type": "boolean"
+    },
+    "vents": {
+      "type": "boolean"
+    },
+    "forklift_pockets": {
+      "type": "boolean"
+    },
+    "main_image": {
+      "type": "string"
+    },
+    "additional_images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "short_description": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "is_purchasable": {
+      "type": "boolean",
+      "default": true
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "title",
+    "sku",
+    "product_type",
+    "size_ft",
+    "condition",
+    "price_gross"
+  ]
+}
