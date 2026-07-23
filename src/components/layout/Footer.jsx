@@ -31,6 +31,7 @@ const FOOTER_NAV = {
       { label: "Datenschutz", to: "/datenschutz" },
       { label: "AGB", to: "/agb" },
       { label: "Widerrufsbelehrung", to: "/widerruf" },
+      { label: "Rückgabe & Erstattung", to: "/rueckgabe-erstattung" },
       { label: "Versand & Lieferung", to: "/lieferung-aufstellung" },
       { label: "Zahlungsarten", to: "/zahlungsarten" },
     ],

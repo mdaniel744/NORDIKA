@@ -19,6 +19,7 @@ import Datenschutz from '@/pages/Datenschutz';
 import AGB from '@/pages/AGB';
 import Widerruf from '@/pages/Widerruf';
 import Zahlungsarten from '@/pages/Zahlungsarten';
+import RueckgabeErstattung from '@/pages/RueckgabeErstattung';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -63,6 +64,7 @@ const AuthenticatedApp = () => {
         <Route path="/agb" element={<AGB />} />
         <Route path="/widerruf" element={<Widerruf />} />
         <Route path="/zahlungsarten" element={<Zahlungsarten />} />
+        <Route path="/rueckgabe-erstattung" element={<RueckgabeErstattung />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
