@@ -21,19 +21,31 @@ export default function FeaturedCategories() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-border">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {CATEGORIES.map((cat) => (
             <Link
               key={cat.slug}
               to={`/container-kaufen`}
-              className="group relative flex flex-col bg-card overflow-hidden hover:bg-card/80 transition-colors"
+              className="group flex flex-col bg-card border border-border overflow-hidden hover:border-primary/40 transition-colors"
             >
-              <div className="aspect-[4/3] overflow-hidden bg-secondary">
-                <Image src={cat.image} alt={cat.name} fittingType="fill" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+              {/* Contrasting tile — transparent cut-out sits on top */}
+              <div className="relative aspect-[4/3] flex items-center justify-center bg-secondary overflow-hidden">
+                <Image
+                  src={cat.image}
+                  alt={cat.name}
+                  fittingType="fit"
+                  className="w-[85%] h-[85%] object-contain transition-transform duration-700 group-hover:scale-105 drop-shadow-sm"
+                />
+                <span className="absolute top-3 left-3 font-mono-tech text-[10px] uppercase tracking-wider text-muted-foreground/70">
+                  {cat.slug}
+                </span>
               </div>
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background via-background/80 to-transparent p-5 pt-16">
-                <h3 className="font-heading text-lg font-bold mb-1 group-hover:text-primary transition-colors">{cat.name}</h3>
-                <p className="text-sm text-muted-foreground leading-snug">{cat.benefit}</p>
+              {/* Label */}
+              <div className="p-4 border-t border-border">
+                <h3 className="font-heading text-base font-bold leading-snug group-hover:text-primary transition-colors">
+                  {cat.name}
+                </h3>
+                <p className="mt-1 text-sm text-muted-foreground leading-snug">{cat.benefit}</p>
               </div>
             </Link>
           ))}
