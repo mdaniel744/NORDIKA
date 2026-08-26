@@ -1,0 +1,74 @@
+"use client";
+
+import { useState, type FormEvent } from "react";
+import { useSearchParams } from "next/navigation";
+import { Check, CheckCircle2, LoaderCircle } from "lucide-react";
+import { categories } from "@/lib/content";
+import { getDictionary, type Locale } from "@/lib/i18n";
+import { countryOptions } from "@/lib/shipping-countries";
+import { SITE } from "@/lib/site";
+import type { Product } from "@/types/catalog";
+
+type QuoteCopy = {
+  steps: [string, string, string]; purpose: string; purposeOptions: string[]; size: string; type: string; modifications: string; modificationOptions: string[];
+  delivery: string; postcode: string; city: string; country: string; date: string; crane: string; contact: string; name: string; company: string; email: string; phone: string; message: string; consent: string;
+};
+
+const quoteCopy: Record<Locale, QuoteCopy> = {
+  de: { steps: ["Container", "Lieferung", "Kontakt"], purpose: "Geplanter Einsatz", purposeOptions: ["Lagerung", "Transport", "Büro / Raum", "Kühlung", "Umbauprojekt", "Sonstige"], size: "Gewünschte Größe", type: "Produktkategorie", modifications: "Gewünschte Umbauten", modificationOptions: ["Fenster", "Personentür", "Rolltor", "Elektrik", "Dämmung", "Heizung / Klima"], delivery: "Lieferort", postcode: "Postleitzahl", city: "Ort", country: "Land", date: "Wunschtermin (optional)", crane: "Kranentladung erforderlich oder gewünscht", contact: "Ihre Kontaktdaten", name: "Name", company: "Unternehmen (optional)", email: "E-Mail", phone: "Telefon", message: "Weitere Angaben zum Projekt", consent: "Ich stimme der Verarbeitung meiner Angaben zur Bearbeitung der Anfrage zu." },
+  en: { steps: ["Container", "Delivery", "Contact"], purpose: "Intended use", purposeOptions: ["Storage", "Transport", "Office / room", "Refrigeration", "Conversion project", "Other"], size: "Preferred size", type: "Product category", modifications: "Requested conversions", modificationOptions: ["Windows", "Personnel door", "Roller door", "Electrics", "Insulation", "Heating / air conditioning"], delivery: "Delivery location", postcode: "Postcode", city: "City", country: "Country", date: "Preferred date (optional)", crane: "Crane unloading required or preferred", contact: "Your contact details", name: "Name", company: "Company (optional)", email: "Email", phone: "Phone", message: "More project details", consent: "I consent to my details being processed to respond to this enquiry." },
+  nl: { steps: ["Container", "Levering", "Contact"], purpose: "Gepland gebruik", purposeOptions: ["Opslag", "Transport", "Kantoor / ruimte", "Koeling", "Ombouwproject", "Anders"], size: "Gewenste maat", type: "Productcategorie", modifications: "Gewenste ombouw", modificationOptions: ["Ramen", "Loopdeur", "Roldeur", "Elektra", "Isolatie", "Verwarming / airco"], delivery: "Leverlocatie", postcode: "Postcode", city: "Plaats", country: "Land", date: "Gewenste datum (optioneel)", crane: "Lossen met kraan nodig of gewenst", contact: "Uw contactgegevens", name: "Naam", company: "Bedrijf (optioneel)", email: "E-mail", phone: "Telefoon", message: "Meer informatie over het project", consent: "Ik stem in met de verwerking van mijn gegevens om deze aanvraag te beantwoorden." },
+  it: { steps: ["Container", "Consegna", "Contatto"], purpose: "Utilizzo previsto", purposeOptions: ["Deposito", "Trasporto", "Ufficio / spazio", "Refrigerazione", "Trasformazione", "Altro"], size: "Dimensione desiderata", type: "Categoria prodotto", modifications: "Trasformazioni richieste", modificationOptions: ["Finestre", "Porta pedonale", "Serranda", "Impianto elettrico", "Isolamento", "Riscaldamento / clima"], delivery: "Luogo di consegna", postcode: "CAP", city: "Città", country: "Paese", date: "Data preferita (opzionale)", crane: "Scarico con gru necessario o preferito", contact: "Dati di contatto", name: "Nome", company: "Azienda (opzionale)", email: "Email", phone: "Telefono", message: "Altri dettagli del progetto", consent: "Acconsento al trattamento dei miei dati per rispondere alla richiesta." },
+  cs: { steps: ["Kontejner", "Doprava", "Kontakt"], purpose: "Plánované využití", purposeOptions: ["Skladování", "Doprava", "Kancelář / prostor", "Chlazení", "Projekt úpravy", "Jiné"], size: "Požadovaná velikost", type: "Kategorie produktu", modifications: "Požadované úpravy", modificationOptions: ["Okna", "Vstupní dveře", "Rolovací vrata", "Elektroinstalace", "Izolace", "Topení / klimatizace"], delivery: "Místo dodání", postcode: "PSČ", city: "Město", country: "Země", date: "Preferovaný termín (volitelné)", crane: "Vykládka jeřábem nutná nebo požadovaná", contact: "Kontaktní údaje", name: "Jméno", company: "Společnost (volitelné)", email: "E-mail", phone: "Telefon", message: "Další údaje o projektu", consent: "Souhlasím se zpracováním údajů za účelem vyřízení této poptávky." },
+  es: { steps: ["Contenedor", "Entrega", "Contacto"], purpose: "Uso previsto", purposeOptions: ["Almacenamiento", "Transporte", "Oficina / espacio", "Refrigeración", "Transformación", "Otro"], size: "Tamaño deseado", type: "Categoría de producto", modifications: "Transformaciones deseadas", modificationOptions: ["Ventanas", "Puerta peatonal", "Puerta enrollable", "Electricidad", "Aislamiento", "Calefacción / climatización"], delivery: "Lugar de entrega", postcode: "Código postal", city: "Ciudad", country: "País", date: "Fecha deseada (opcional)", crane: "Descarga con grúa necesaria o preferida", contact: "Datos de contacto", name: "Nombre", company: "Empresa (opcional)", email: "Correo electrónico", phone: "Teléfono", message: "Más detalles del proyecto", consent: "Consiento el tratamiento de mis datos para responder a esta solicitud." },
+};
+
+const addressCopy: Record<Locale, { street: string; number: string; line2: string; city: string }> = {
+  de: { street: "Straße", number: "Hausnummer", line2: "Adresszusatz (optional)", city: "Ort / Region" },
+  en: { street: "Street", number: "House number", line2: "Address line 2 (optional)", city: "City / region" },
+  nl: { street: "Straat", number: "Huisnummer", line2: "Adresregel 2 (optioneel)", city: "Plaats / regio" },
+  it: { street: "Via", number: "Numero", line2: "Indirizzo, riga 2 (facoltativo)", city: "Città / regione" },
+  cs: { street: "Ulice", number: "Číslo", line2: "Doplnění adresy (volitelné)", city: "Město / region" },
+  es: { street: "Calle", number: "Número", line2: "Dirección, línea 2 (opcional)", city: "Ciudad / región" },
+};
+
+export function QuoteWizard({ locale, products }: { locale: Locale; products: Product[] }) {
+  const dict = getDictionary(locale);
+  const labels = quoteCopy[locale];
+  const searchParams = useSearchParams();
+  const preset = searchParams?.get("product") || "";
+  const countries = countryOptions(locale);
+  const presetProduct = products.find((product) => product.sku === preset || product.id === preset || product.slug === preset);
+  const presetCategory = categories.find((category) => category.key === preset || (presetProduct && category.match(presetProduct.product_type, presetProduct.sku)))?.key || "";
+  const categoryOptions = categories.map((category) => ({ value: category.key, label: category.titles[locale] }));
+  const [step, setStep] = useState(0);
+  const [state, setState] = useState<"idle" | "sending" | "success" | "error">("idle");
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setState("sending");
+    const form = new FormData(event.currentTarget);
+    const response = await fetch("/api/enquiries", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ formType: "quote", locale, purpose: form.get("purpose"), baseSize: form.get("baseSize"), baseType: form.get("baseType"), modifications: form.getAll("modifications"), street: form.get("street"), houseNumber: form.get("houseNumber"), addressLine2: form.get("addressLine2"), postcode: form.get("postcode"), city: form.get("city"), countryCode: form.get("countryCode"), deliveryDate: form.get("deliveryDate"), crane: form.get("crane") === "on", name: form.get("name"), company: form.get("company"), email: form.get("email"), phone: form.get("phone"), message: form.get("message"), website: form.get("website"), consent: form.get("consent") === "on" }) }).catch(() => null);
+    setState(response?.ok ? "success" : "error");
+  }
+  if (state === "success") return <div className="surface-card mx-auto flex max-w-2xl items-start gap-4 p-8" role="status"><CheckCircle2 className="h-8 w-8 shrink-0 text-green-700" /><div><h2 className="text-2xl font-extrabold">{dict.common.success}</h2><p className="mt-2 text-zinc-600">{SITE.name}</p></div></div>;
+  return <form onSubmit={submit} className="surface-card mx-auto max-w-4xl p-5 sm:p-8">
+    <ol className="mb-9 grid grid-cols-3 gap-2">{labels.steps.map((label, index) => <li key={label} className={`border-t-4 pt-3 text-xs font-extrabold uppercase tracking-wider ${index <= step ? "border-primary text-primary" : "border-zinc-200 text-zinc-400"}`}><span className="mr-2 inline-grid h-6 w-6 place-items-center rounded-full bg-primary text-[11px] text-white">{index < step ? <Check className="h-3.5 w-3.5" /> : index + 1}</span>{label}</li>)}</ol>
+    <div data-step="0" className={step === 0 ? "grid gap-6" : "hidden"} aria-hidden={step !== 0}>
+      <SelectField name="purpose" label={labels.purpose} required options={labels.purposeOptions} />
+      <SelectField name="baseSize" label={labels.size} required options={["10 ft", "20 ft", "40 ft", "40 ft High Cube", "Andere / Other"]} />
+      <SelectOptionField name="baseType" label={labels.type} required options={categoryOptions} defaultValue={presetCategory} />
+      <fieldset><legend className="text-sm font-bold">{labels.modifications}</legend><div className="mt-3 grid gap-3 sm:grid-cols-2">{labels.modificationOptions.map((option) => <label key={option} className="flex items-center gap-3 border border-zinc-200 p-3 text-sm"><input type="checkbox" name="modifications" value={option} className="h-4 w-4 accent-primary" />{option}</label>)}</div></fieldset>
+    </div>
+    <div data-step="1" className={step === 1 ? "grid gap-6" : "hidden"} aria-hidden={step !== 1}>
+      <h2 className="text-2xl font-extrabold">{labels.delivery}</h2><div className="grid gap-5"><div className="grid gap-5 sm:grid-cols-[1fr_150px]"><Field name="street" label={addressCopy[locale].street} autoComplete="address-line1" required /><Field name="houseNumber" label={addressCopy[locale].number} required /></div><Field name="addressLine2" label={addressCopy[locale].line2} autoComplete="address-line2" /><div className="grid gap-5 sm:grid-cols-[150px_1fr]"><Field name="postcode" label={labels.postcode} autoComplete="postal-code" required /><Field name="city" label={addressCopy[locale].city} autoComplete="address-level2" required /></div><SelectOptionField name="countryCode" label={labels.country} required defaultValue="DE" options={countries.map(({ code, label }) => ({ value: code, label }))} /><Field name="deliveryDate" label={labels.date} type="date" /></div>{locale === "de" && <p className="text-sm leading-6 text-zinc-600">Die auswählbaren Länder bilden das EU-Liefergebiet ab. Lieferzeit, individueller Transportpreis und enthaltene Entladeleistung werden vor Vertragsschluss bestätigt.</p>}<label className="flex items-center gap-3 border border-zinc-200 p-4 text-sm font-bold"><input type="checkbox" name="crane" className="h-4 w-4 accent-primary" />{labels.crane}</label>
+    </div>
+    <div data-step="2" className={step === 2 ? "grid gap-6" : "hidden"} aria-hidden={step !== 2}>
+      <h2 className="text-2xl font-extrabold">{labels.contact}</h2><div className="grid gap-5 sm:grid-cols-2"><Field name="name" label={labels.name} required /><Field name="company" label={labels.company} /><Field name="email" label={labels.email} type="email" required /><Field name="phone" label={labels.phone} type="tel" required /></div><label className="grid gap-2 text-sm font-bold">{labels.message}<textarea name="message" required minLength={5} rows={5} className="border border-zinc-300 p-3 font-normal" /></label><label className="flex items-start gap-3 text-sm text-zinc-600"><input name="consent" required type="checkbox" className="mt-1 h-4 w-4 accent-primary" />{labels.consent}</label><input name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />{state === "error" && <p role="alert" className="font-bold text-red-700">{dict.common.error}</p>}
+    </div>
+    <div className="mt-9 flex justify-between gap-3"><button type="button" disabled={step === 0 || state === "sending"} onClick={() => setStep((value) => Math.max(0, value - 1))} className="button-outline disabled:invisible">{dict.common.back}</button>{step < 2 ? <button type="button" onClick={(event) => { const panel = event.currentTarget.form?.querySelector(`[data-step="${step}"]`); const invalid = panel?.querySelector(":invalid") as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null; if (invalid) { invalid.reportValidity(); invalid.focus(); return; } setStep((value) => Math.min(2, value + 1)); }} className="button-primary">{dict.common.next}</button> : <button disabled={state === "sending"} type="submit" className="button-primary">{state === "sending" ? <><LoaderCircle className="h-4 w-4 animate-spin" />{dict.common.sending}</> : dict.common.submit}</button>}</div>
+  </form>;
+}
+
+function Field({ name, label, type = "text", required = false, defaultValue, autoComplete }: { name: string; label: string; type?: string; required?: boolean; defaultValue?: string; autoComplete?: string }) { return <label className="grid gap-2 text-sm font-bold">{label}<input name={name} type={type} required={required} defaultValue={defaultValue} autoComplete={autoComplete} className="h-12 border border-zinc-300 px-3 font-normal" /></label>; }
+function SelectField({ name, label, options, required = false }: { name: string; label: string; options: string[]; required?: boolean }) { return <label className="grid gap-2 text-sm font-bold">{label}<select name={name} required={required} defaultValue="" className="h-12 border border-zinc-300 bg-white px-3 font-normal"><option value="" disabled>—</option>{options.map((option) => <option key={option}>{option}</option>)}</select></label>; }
+function SelectOptionField({ name, label, options, required = false, defaultValue = "" }: { name: string; label: string; options: Array<{ value: string; label: string }>; required?: boolean; defaultValue?: string }) { return <label className="grid gap-2 text-sm font-bold">{label}<select name={name} required={required} defaultValue={defaultValue} className="h-12 border border-zinc-300 bg-white px-3 font-normal"><option value="" disabled>—</option>{options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>; }

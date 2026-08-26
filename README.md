@@ -1,77 +1,63 @@
-# Base44 Project
+# NORDIKA Container
 
-Use this repository to run and edit the app locally, then publish changes back through Base44.
+Production-oriented Next.js 16 storefront for NORDIKA Container GmbH. The public site is server-rendered and localized in German, English, Dutch, Italian, Czech, and Spanish. Product data and enquiry submissions remain connected to the existing Base44 catalogue.
 
-Any change pushed to the repo will also be reflected in the Base44 Builder.
+## Requirements
 
-## Prerequisites
+- Node.js 20.9 or newer
+- npm
+- Network access to `https://base44.app` and `https://media.base44.com`
 
-1. Clone the repository using the project's Git URL.
-2. Navigate to the project directory.
-3. Install dependencies: `npm install`.
-4. Install the Base44 CLI: `npm install -g base44@latest`.
-
-See the [Base44 CLI docs](https://docs.base44.com/developers/references/cli/get-started/overview) if you want to run Base44 commands directly.
-
-## Run Locally
-
-Run the full local development environment from the project root:
+## Local development
 
 ```bash
-base44 dev
+npm ci
+copy .env.example .env.local
+npm run dev -- --port 3001
 ```
 
-`base44 dev` starts the local Base44 development backend and, when this app is configured for it, also starts the frontend dev server for you. Use the frontend URL printed by the command.
+Open `http://127.0.0.1:3001/de`. The root URL redirects permanently to German. Other entry points are `/en`, `/nl`, `/it`, `/cs`, and `/es`.
 
-For example, when the Base44 project config includes a `serveCommand`, `base44 dev` can launch the frontend too:
+The committed app ID points to the existing public catalogue. Override it in `.env.local` only when working against a different Base44 environment. Do not commit access tokens or other secrets.
 
-```json5
-{
-  "site": {
-    "serveCommand": "npm run dev"
-  }
-}
-```
-
-In a Base44 project this lives in `base44/config.jsonc`.
-
-## Run Only The Frontend
-
-If you only want to work on the frontend against the hosted Base44 backend, run:
+## Quality checks
 
 ```bash
-npm run dev
+npm run translation:audit
+npm run typecheck
+npm run lint
+npm run build
+npm run test:smoke
 ```
 
-Open the local URL printed by Vite.
+The production build pre-generates localized home, catalogue, category, guide, location, legal, and product URLs. Catalogue data is revalidated every 15 minutes. Filtered/search URLs receive an `X-Robots-Tag: noindex, follow` response header and retain the clean catalogue canonical.
 
-## Use The Hosted Backend
+## Runtime and deployment
 
-For frontend-only development, create or update `.env.local` in the project root:
+This app requires a Next.js-capable Node.js or container host; it is not a static Vite bundle. Use either:
 
 ```bash
-VITE_BASE44_APP_ID=your_app_id
-VITE_BASE44_APP_BASE_URL=https://your-app.base44.app
+npm run build
+npm run start
 ```
 
-`VITE_BASE44_APP_ID` identifies the Base44 app.
+or build the included Docker image. `next.config.ts` enables standalone output for a minimal production runtime. Put a reverse proxy or managed Next.js platform in front of self-hosted instances and configure `NEXT_PUBLIC_SITE_URL` with the final canonical origin before building.
 
-`VITE_BASE44_APP_BASE_URL` tells the Base44 Vite plugin where to send local `/api` requests. Point it at your deployed Base44 app URL when you want the local frontend to use the hosted backend.
+Required production variables are documented in `.env.example`. The Base44 catalogue is public; enquiry creation is validated and proxied through the server route at `/api/enquiries`.
 
-When you use `base44 dev`, the command injects the local Base44 values for you, so `.env.local` is mainly needed for frontend-only workflows.
+## Important launch checks
 
-## Publish Your Changes
+- Legally verify the supplied Hamburg and Pinneberg register entries, EUID and VAT ID before publishing; add the authorised representative once confirmed.
+- Confirm delivery pricing, accepted payment methods, business hours, and consumer-policy wording with NORDIKA Container GmbH.
+- Verify the final DNS/canonical origin and submit `/sitemap.xml` in the relevant search consoles.
+- Confirm Base44 email/password, Google sign-in, reset-password callback URLs, and any MCP OAuth consent callback against the final production origin.
 
-After pushing your changes to git, open the Base44 dashboard and publish the app:
+## Project layout
 
-```bash
-base44 dashboard open
-```
+- `src/app/` — Next.js App Router pages, metadata routes, and enquiry API
+- `components/` — server and client UI components
+- `lib/` — locale, routing, catalogue, content, product, and site utilities
+- `base44/entities/` — existing Base44 entity definitions
+- `legacy/vite-app/` — read-only archive of the verified pre-migration Vite frontend
 
-## Docs & Support
-
-Documentation: [https://docs.base44.com/Integrations/Using-GitHub](https://docs.base44.com/Integrations/Using-GitHub)
-
-Base44 CLI command reference: [https://docs.base44.com/developers/references/cli/commands/introduction](https://docs.base44.com/developers/references/cli/commands/introduction)
-
-Support: [https://app.base44.com/support](https://app.base44.com/support)
+Only the Next.js app is active. The archive is retained for traceability and is not installed, built, or served.

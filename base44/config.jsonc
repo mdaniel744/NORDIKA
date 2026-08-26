@@ -1,9 +1,9 @@
 {
-  "name": "untitled",
+  "name": "NORDIKA Container",
   "site": {
     "installCommand": "npm install",
     "buildCommand": "npm run build",
     "serveCommand": "npm run dev",
-    "outputDirectory": "./dist"
+    "outputDirectory": "./.next"
   }
 }
