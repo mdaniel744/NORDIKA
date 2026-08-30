@@ -34,7 +34,7 @@ for (const directory of ["src/app", "components", "lib"]) collect(path.join(root
 function collect(directory) { for (const entry of fs.readdirSync(directory, { withFileTypes: true })) { const full = path.join(directory, entry.name); if (entry.isDirectory()) collect(full); else if (/\.(?:ts|tsx)$/.test(entry.name)) projectFiles.push(full); } }
 for (const file of projectFiles) {
   const content = fs.readFileSync(file, "utf8");
-  if (/contesol/i.test(content)) errors.push(`${path.relative(root, file)}: forbidden Contesol brand reference`);
+  if (/(?:contesol|baltes container)/i.test(content)) errors.push(`${path.relative(root, file)}: forbidden former-brand reference`);
 }
 
 if (errors.length) { console.error(errors.join("\n")); process.exit(1); }

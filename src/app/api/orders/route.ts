@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getProducts } from "@/lib/catalog";
 import { isProductPurchasable } from "@/lib/products";
-import { SITE } from "@/lib/site";
 import { countryName, EU_COUNTRY_CODES } from "@/lib/shipping-countries";
+import { saveSubmission } from "@/lib/submission-store";
 
 const orderSchema = z.object({
   locale: z.enum(["de", "en", "nl", "it", "cs", "es"]),
@@ -107,20 +107,11 @@ export async function POST(request: Request) {
   };
 
   try {
-    const response = await fetch(`${SITE.base44Url}/api/apps/${SITE.appId}/entities/QuoteRequest`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-App-Id": SITE.appId },
-      body: JSON.stringify(payload),
-      cache: "no-store",
-    });
-    if (!response.ok) {
-      console.error("Base44 order failed", response.status, await response.text());
-      return NextResponse.json({ error: "Submission failed" }, { status: 502 });
-    }
+    await saveSubmission("order", { reference, payload, pricing: { goodsTotal, catalogGross, subtotalNet, vatAmount }, paymentMethod: parsed.paymentMethod });
     return NextResponse.json({ ok: true, reference, goodsTotal, catalogGross, subtotalNet, vatAmount, vatRate: germanTax ? 0.19 : intraEuBusiness ? 0 : null, vatStatus: intraEuBusiness ? "pending_vies_and_transport_verification" : germanTax ? "included" : "pending_destination_review", shippingStatus: "pending_review", paymentMethod: parsed.paymentMethod }, { status: 201 });
   } catch (error) {
-    console.error("Order transport failed", error);
-    return NextResponse.json({ error: "Submission failed" }, { status: 502 });
+    console.error("Unable to save order", error);
+    return NextResponse.json({ error: "Submission failed" }, { status: 500 });
   }
 }
 

@@ -1,25 +1,11 @@
 import type { CatalogMeta, Product } from "@/types/catalog";
+import { LOCAL_PRODUCTS } from "@/lib/catalog-data";
 import { SITE } from "@/lib/site";
 
-const PRODUCT_ENDPOINT = `${SITE.base44Url}/api/apps/${SITE.appId}/entities/Product`;
-
 export async function getProducts(): Promise<Product[]> {
-  try {
-    const response = await fetch(`${PRODUCT_ENDPOINT}?sort=-created_date&limit=100`, {
-      headers: { "X-App-Id": SITE.appId },
-      next: { revalidate: 900, tags: ["catalogue"] },
-    });
-    if (!response.ok) throw new Error(`Catalogue returned ${response.status}`);
-    const payload: unknown = await response.json();
-    return Array.isArray(payload)
-      ? (payload as Product[])
-          .map((product) => ({ ...product, depot: SITE.address.city }))
-          .sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)))
-      : [];
-  } catch (error) {
-    console.error("Unable to load the container catalogue", error);
-    return [];
-  }
+  return LOCAL_PRODUCTS
+    .map((product) => ({ ...product, additional_images: [...(product.additional_images || [])], depot: SITE.address.city }))
+    .sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)));
 }
 
 export async function getProductByIdentifier(identifier: string): Promise<Product | undefined> {

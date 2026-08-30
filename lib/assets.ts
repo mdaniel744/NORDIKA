@@ -1,13 +1,6 @@
 export const IMAGES = {
-  logo: "/baltes-brand.png",
-  hero: "/images/baltes-hero.png",
-  container20: "/images/container-20.png",
+  hero: "/images/nordika-hero.png",
   container40hc: "/images/container-40hc.png",
-  reefer: "/images/reefer.png",
-  used: "/images/used-container.png",
-  openSide: "/images/open-side.png",
-  office: "/images/office-container.png",
-  delivery: "/images/delivery.png",
   categorySea: "/images/categories/sea-container.jpg",
   categoryStorage: "/images/categories/storage-container.jpg",
   categoryRefrigerated: "/images/categories/refrigerated-container.jpg",
@@ -21,8 +14,4 @@ export const IMAGES = {
   homeProcess: "/images/homepage/from-selection-to-installation.webp",
   homeDelivery: "/images/homepage/delivery-installation.webp",
   homeMainz: "/images/homepage/nordika-container-mainz.jpg",
-  standardCutout: "/images/standard-cutout.png",
-  highCubeCutout: "/images/high-cube-cutout.png",
-  reeferCutout: "/images/reefer-cutout.png",
-  openSideCutout: "/images/open-side-cutout.png",
 } as const;

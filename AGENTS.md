@@ -2,35 +2,23 @@
 
 ## Project Context
 
-This is a Next.js App Router storefront connected to an existing Base44 backend. Treat it as user-owned application code, keep changes focused on the user's request, and preserve existing project conventions.
+This is a self-contained Next.js App Router storefront. Treat it as user-owned application code, keep changes focused on the user's request, and preserve existing project conventions.
 
 Start with `README.md` for local setup, environment variables, and publish workflow.
-
-## Base44 References
-
-- CLI overview: https://docs.base44.com/developers/references/cli/get-started/overview.md
-- Agent skills: https://docs.base44.com/developers/backend/overview/skills.md
-
-If your agent supports Agent Skills, install or update Base44 skills before Base44-specific work:
-
-```bash
-npx skills add base44/skills
-```
 
 ## Key Files
 
 - `src/app/`: localized Next.js routes, metadata routes, and server enquiry API.
 - `components/`: server and client UI components.
-- `lib/`: routing, translations, Base44 catalogue access, and domain utilities.
-- `legacy/vite-app/`: inactive archive of the pre-migration Vite frontend.
+- `lib/`: routing, translations, local catalogue data, submission storage, and domain utilities.
 - `.env.local`: local-only environment values; never commit secrets.
 
 ## Working Notes
 
-- Use `npm run dev` for frontend development against the hosted Base44 backend.
+- Use `npm run dev` for frontend development.
 - Use `npm run build` followed by `npm run start` to verify the standalone production runtime.
 - Keep public product reads on the server and validated enquiry writes behind `/api/enquiries`.
-- Use the Base44 CLI only for Base44 entity or backend work; do not reintroduce the Vite frontend.
+- Keep catalogue data application-owned and submission storage server-side. Do not add an unapproved client SDK, customer-account UI, or restore a retired prototype frontend.
 - Run the relevant checks from `package.json` before finishing code changes.
 
 <!-- BEGIN:nextjs-agent-rules -->

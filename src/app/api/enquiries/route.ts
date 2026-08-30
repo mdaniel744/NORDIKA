@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { SITE } from "@/lib/site";
 import { countryName, EU_COUNTRY_CODES } from "@/lib/shipping-countries";
+import { saveSubmission } from "@/lib/submission-store";
 
 const enquirySchema = z.object({
   formType: z.enum(["quote", "contact"]),
@@ -69,20 +70,11 @@ export async function POST(request: Request) {
   };
 
   try {
-    const response = await fetch(`${SITE.base44Url}/api/apps/${SITE.appId}/entities/QuoteRequest`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-App-Id": SITE.appId },
-      body: JSON.stringify(payload),
-      cache: "no-store",
-    });
-    if (!response.ok) {
-      console.error("Base44 enquiry failed", response.status, await response.text());
-      return NextResponse.json({ error: "Submission failed" }, { status: 502 });
-    }
-    return NextResponse.json({ ok: true }, { status: 201 });
+    const receipt = await saveSubmission("enquiry", { payload, formType: parsed.formType, locale: parsed.locale });
+    return NextResponse.json({ ok: true, reference: receipt.id }, { status: 201 });
   } catch (error) {
-    console.error("Enquiry transport failed", error);
-    return NextResponse.json({ error: "Submission failed" }, { status: 502 });
+    console.error("Unable to save enquiry", error);
+    return NextResponse.json({ error: "Submission failed" }, { status: 500 });
   }
 }
 

@@ -6,5 +6,6 @@ if (portIndex !== -1 && process.argv[portIndex + 1]) process.env.PORT = process.
 
 process.env.HOSTNAME ||= "0.0.0.0";
 process.env.NODE_ENV ||= "production";
+process.env.NORDIKA_SUBMISSIONS_DIR ||= resolve(".data/submissions");
 
 await import(pathToFileURL(resolve(".next/standalone/server.js")).href);

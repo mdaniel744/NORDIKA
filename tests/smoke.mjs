@@ -41,6 +41,16 @@ for (const [legacyPath, expected] of [["/widerruf", "/de/widerrufsrecht"], ["/co
   assert.equal(new URL(response.headers.get("location"), origin).pathname, expected, `${legacyPath} redirect target`);
 }
 
+for (const removedPath of ["/login", "/register", "/oauth-consent", "/en/login", "/de/anmelden", "/api/apps/unused-prototype-route"]) {
+  const response = await fetch(`${origin}${removedPath}`, { redirect: "manual" });
+  assert.equal(response.status, 404, `${removedPath} should be removed`);
+}
+
+const packageSource = await readFile(new URL("../package.json", import.meta.url), "utf8");
+for (const retiredPackage of ["@base" + "44/sdk", "base" + "44"]) assert.ok(!Object.keys(JSON.parse(packageSource).dependencies || {}).includes(retiredPackage) && !Object.keys(JSON.parse(packageSource).devDependencies || {}).includes(retiredPackage), `retired package remains: ${retiredPackage}`);
+const nextConfigSource = await readFile(new URL("../next.config.ts", import.meta.url), "utf8");
+assert.doesNotMatch(nextConfigSource, /source:\s*["']\/api\/apps/i, "prototype API rewrite remains");
+
 const filtered = await fetch(`${origin}/de/container-kaufen?q=20`);
 assert.match(filtered.headers.get("x-robots-tag") || "", /noindex/i, "filtered catalogue lacks X-Robots-Tag noindex");
 

@@ -2,8 +2,6 @@ export const SITE = {
   name: "NORDIKA Container",
   legalName: "NORDIKA Container GmbH",
   url: (process.env.NEXT_PUBLIC_SITE_URL || "https://nordikacontainer.com").replace(/\/$/, ""),
-  appId: process.env.BASE44_APP_ID || process.env.NEXT_PUBLIC_BASE44_APP_ID || "6a617cd5481a171d302809dc",
-  base44Url: process.env.BASE44_API_URL || "https://base44.app",
   email: "info@nordikacontainer.com",
   phone: "+49 01512 4371427",
   phoneHref: "+4915124371427",

@@ -1,7 +1,7 @@
 .git
 .next
 node_modules
-legacy
+.data
 npm-debug.log*
 .env*
 !.env.example

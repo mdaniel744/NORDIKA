@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import { notFound, permanentRedirect } from "next/navigation";
-import { AuthPage } from "@/components/auth-page";
 import { CartPage } from "@/components/cart-page";
 import { CheckoutPage } from "@/components/checkout-page";
 import { CategoriesPage, CategoryPage } from "@/components/category-pages";
@@ -29,14 +27,13 @@ type PageProps = {
 };
 
 const indexableStatic: RouteKey[] = ["shop", "types", "guides", "conversions", "about", "contact", "delivery", "locations", "faq", "conditions", "imprint", "privacy", "terms", "withdrawal", "withdrawalForm", "returns", "payments", "cookies", "complaints", "warranty", "accessibility"];
-const authKeys: RouteKey[] = ["login", "register", "forgotPassword", "resetPassword"];
 const legalKeys: RouteKey[] = ["imprint", "privacy", "terms", "withdrawal", "withdrawalForm", "returns", "payments", "cookies", "complaints", "warranty", "accessibility"];
 
 export async function generateStaticParams() {
   const products = await getProducts();
   const params: Array<{ locale: Locale; segments: string[] }> = [];
   for (const locale of locales) {
-    for (const key of [...indexableStatic, "quote", "cart", "checkout", ...authKeys] as RouteKey[]) params.push({ locale, segments: href(locale, key).split("/").filter(Boolean).slice(1) });
+    for (const key of [...indexableStatic, "quote", "cart", "checkout"] as RouteKey[]) params.push({ locale, segments: href(locale, key).split("/").filter(Boolean).slice(1) });
     for (const category of categories) params.push({ locale, segments: [href(locale, "types").split("/").at(-1)!, category.slugs[locale]] });
     for (const guide of guides) params.push({ locale, segments: [href(locale, "guides").split("/").at(-1)!, guide.slugs[locale]] });
     for (const depot of DEPOTS) params.push({ locale, segments: [href(locale, "locations").split("/").at(-1)!, depot.name.toLowerCase()] });
@@ -90,7 +87,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const canonicalPath = href(locale, key, canonicalTail);
   const languages = Object.fromEntries(locales.map((item) => [item, `${SITE.url}${href(item, key, tailByLocale?.[item])}`]));
-  const noIndex = key === "cart" || key === "checkout" || key === "quote" || authKeys.includes(key);
+  const noIndex = key === "cart" || key === "checkout" || key === "quote";
   return {
     metadataBase: new URL(SITE.url),
     title,
@@ -145,7 +142,6 @@ export default async function LocalizedRoute({ params }: PageProps) {
     const localBusiness = { "@context": "https://schema.org", "@type": "LocalBusiness", name: `${SITE.name} ${depot.name}`, address: depot.address, telephone: depot.phone, parentOrganization: { "@type": "Organization", name: SITE.name, url: SITE.url } };
     return <><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJson(localBusiness) }} /><LocationPage locale={locale} depot={depot} products={await getProducts()} /></>;
   }
-  if (authKeys.includes(key) && segments.length === 1) return <Suspense fallback={<main className="grid min-h-[65vh] place-items-center">{SITE.name}</main>}><AuthPage locale={locale} mode={key as "login" | "register" | "forgotPassword" | "resetPassword"} /></Suspense>;
   if (legalKeys.includes(key) && segments.length === 1) { const copy = getLegalCopy(locale, key); if (!copy) notFound(); return <LegalPage locale={locale} copy={copy} />; }
   const content = getSimplePage(locale, key);
   if (content && segments.length === 1) {
@@ -167,7 +163,7 @@ function routeTitle(locale: Locale, key: RouteKey): string {
   const legal = getLegalCopy(locale, key);
   if (legal) return legal.title;
   const checkout: Record<Locale, string> = { de: "Kasse", en: "Checkout", nl: "Afrekenen", it: "Checkout", cs: "Pokladna", es: "Pago" };
-  const map: Partial<Record<RouteKey, string>> = { shop: dict.catalogue.title, product: dict.nav.shop, types: dict.nav.types, guides: dict.nav.guides, quote: dict.nav.quote, cart: dict.nav.cart, checkout: checkout[locale], login: dict.nav.home, register: dict.nav.home, forgotPassword: dict.nav.home, resetPassword: dict.nav.home };
+  const map: Partial<Record<RouteKey, string>> = { shop: dict.catalogue.title, product: dict.nav.shop, types: dict.nav.types, guides: dict.nav.guides, quote: dict.nav.quote, cart: dict.nav.cart, checkout: checkout[locale] };
   return map[key] || SITE.name;
 }
 

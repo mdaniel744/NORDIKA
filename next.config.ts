@@ -7,7 +7,6 @@ const nextConfig: NextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [
-      { protocol: "https", hostname: "media.base44.com", pathname: "/images/**" },
       { protocol: "https", hostname: "static.wixstatic.com", pathname: "/**" },
     ],
   },
@@ -35,14 +34,7 @@ const nextConfig: NextConfig = {
       { source: "/reklamation", destination: "/de/reklamation", permanent: true },
       { source: "/gewaehrleistung", destination: "/de/gewaehrleistung", permanent: true },
       { source: "/barrierefreiheit", destination: "/de/barrierefreiheit", permanent: true },
-      { source: "/login", destination: "/de/anmelden", permanent: false },
-      { source: "/register", destination: "/de/registrieren", permanent: false },
-      { source: "/forgot-password", destination: "/de/passwort-vergessen", permanent: false },
-      { source: "/reset-password", destination: "/de/passwort-zuruecksetzen", permanent: false },
     ];
-  },
-  async rewrites() {
-    return [{ source: "/api/apps/:path*", destination: "https://base44.app/api/apps/:path*" }];
   },
 };
 
