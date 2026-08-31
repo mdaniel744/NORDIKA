@@ -39,11 +39,16 @@ function runDeploy() {
     ["pm2", ["restart", PM2_APP_NAME]],
   ];
 
+  // npm ci / npm run build must not inherit NODE_ENV=production from this
+  // process's own environment: production mode makes npm skip devDependencies
+  // (tailwindcss, typescript, postcss) that the build itself needs.
+  const buildEnv = { ...process.env, NODE_ENV: "development" };
+
   (async () => {
     for (const [command, args] of commands) {
       await log(`Running: ${command} ${args.join(" ")}`);
       const exitCode = await new Promise((resolvePromise) => {
-        const child = spawn(command, args, { cwd: REPO_DIR, shell: true });
+        const child = spawn(command, args, { cwd: REPO_DIR, shell: true, env: command === "pm2" ? process.env : buildEnv });
         child.stdout.on("data", (chunk) => log(chunk.toString().trim()));
         child.stderr.on("data", (chunk) => log(chunk.toString().trim()));
         child.on("close", resolvePromise);
