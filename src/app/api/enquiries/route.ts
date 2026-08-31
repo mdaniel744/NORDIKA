@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { SITE } from "@/lib/site";
-import { countryName, EU_COUNTRY_CODES } from "@/lib/shipping-countries";
+import { getProducts } from "@/lib/catalog";
+import { saveInquiry } from "@/lib/inquiries";
 import { saveSubmission } from "@/lib/submission-store";
+import { countryName, EU_COUNTRY_CODES } from "@/lib/shipping-countries";
 
 const enquirySchema = z.object({
   formType: z.enum(["quote", "contact"]),
   locale: z.enum(["de", "en", "nl", "it", "cs", "es"]),
+  productId: z.string().trim().max(200).optional().default(""),
   company: z.string().trim().max(160).optional().default(""),
   name: z.string().trim().min(2).max(160),
   email: z.string().trim().email().max(200),
@@ -47,54 +49,63 @@ export async function POST(request: Request) {
   if (parsed.website) return NextResponse.json({ ok: true });
   if (parsed.formType === "quote" && (!parsed.street || !parsed.houseNumber || !parsed.postcode || !parsed.city)) return NextResponse.json({ error: "A complete delivery address is required" }, { status: 400 });
   const deliveryCountry = countryName(parsed.countryCode, "de");
-  const deliveryAddress = [parsed.street && `${parsed.street} ${parsed.houseNumber}`, parsed.addressLine2, parsed.postcode && `${parsed.postcode} ${parsed.city}`, deliveryCountry].filter(Boolean).join(", ");
 
-  const payload = {
+  let productId: string | null = null;
+  let productLabel = parsed.baseType || "";
+  if (parsed.productId) {
+    const products = await getProducts();
+    const product = products.find((item) => item.id === parsed.productId);
+    if (product) {
+      productId = product.id;
+      productLabel = product.title;
+    }
+  }
+
+  const messageParts = [
+    parsed.formType === "quote" ? "Angebotsanfrage" : "Kontaktanfrage",
+    parsed.company ? "Geschäftskunde" : "Privatkunde",
+  ];
+  if (productLabel) messageParts.push(productLabel);
+  else if (parsed.baseSize) messageParts.push(parsed.baseSize);
+  if (parsed.formType === "quote" && parsed.city) messageParts.push(`Lieferung nach ${parsed.city}`);
+  if (parsed.deliveryDate) messageParts.push(`Wunschtermin ${parsed.deliveryDate}`);
+  if (parsed.crane) messageParts.push("Kranentladung erforderlich");
+  const message = messageParts.join(" — ");
+
+  const details = {
+    request_type: "enquiry",
+    form_type: parsed.formType,
+    locale: parsed.locale,
     customer_type: parsed.company ? "Geschäftskunde" : "Privatkunde",
-    company: parsed.company,
-    name: parsed.name,
-    email: parsed.email,
-    phone: parsed.phone,
-    purpose: parsed.formType === "contact" ? "Sonstige" : normalizePurpose(parsed.purpose),
-    base_size: normalizeSize(parsed.baseSize),
-    base_type: normalizeType(parsed.baseType),
+    company: parsed.company || null,
+    purpose: parsed.purpose,
+    base_size: parsed.baseSize,
+    base_type: parsed.baseType,
     modifications: parsed.modifications,
-    delivery_postcode: parsed.postcode,
-    delivery_city: parsed.city,
-    delivery_country: deliveryCountry,
+    delivery: {
+      street: parsed.street,
+      house_number: parsed.houseNumber,
+      address_line2: parsed.addressLine2,
+      postcode: parsed.postcode,
+      city: parsed.city,
+      country: deliveryCountry,
+    },
     preferred_date: parsed.deliveryDate,
     crane_required: parsed.crane,
-    ground_prepared: false,
-    message: `[${parsed.formType.toUpperCase()} · ${parsed.locale}] Gewünschter Typ/Artikel: ${parsed.baseType || "–"}${parsed.formType === "quote" ? `\nLieferadresse: ${deliveryAddress}` : ""}\n${parsed.message}`,
-    status: "Neu",
+    notes: parsed.message,
   };
 
   try {
-    const receipt = await saveSubmission("enquiry", { payload, formType: parsed.formType, locale: parsed.locale });
-    return NextResponse.json({ ok: true, reference: receipt.id }, { status: 201 });
+    await saveInquiry({ customerName: parsed.name, customerEmail: parsed.email, customerPhone: parsed.phone, productId, message, details });
+    return NextResponse.json({ ok: true }, { status: 201 });
   } catch (error) {
-    console.error("Unable to save enquiry", error);
-    return NextResponse.json({ error: "Submission failed" }, { status: 500 });
+    console.error("Unable to save enquiry to Supabase, falling back to local storage", error);
+    try {
+      await saveSubmission("enquiry", { message, details, customerName: parsed.name, customerEmail: parsed.email });
+      return NextResponse.json({ ok: true }, { status: 201 });
+    } catch (fallbackError) {
+      console.error("Local fallback also failed for enquiry", fallbackError);
+      return NextResponse.json({ error: "Submission failed" }, { status: 500 });
+    }
   }
-}
-
-function normalizePurpose(value: string): "Lagerung" | "Büro" | "Kühlung" | "Sonstige" {
-  if (/lager|storage|opslag|deposito|sklad|almacen/i.test(value)) return "Lagerung";
-  if (/büro|office|kantoor|ufficio|kancel|oficina|raum|ruimte|prostor|espacio/i.test(value)) return "Büro";
-  if (/kühl|refrig|koel|chlaz|chlad|frío|cool/i.test(value)) return "Kühlung";
-  return "Sonstige";
-}
-
-function normalizeSize(value: string): "10 ft" | "20 ft" | "40 ft" | "Unsicher" {
-  if (/^10\b/.test(value)) return "10 ft";
-  if (/^20\b/.test(value)) return "20 ft";
-  if (/^40\b/.test(value)) return "40 ft";
-  return "Unsicher";
-}
-
-function normalizeType(value: string): "Standard" | "High Cube" | "Neu" | "Gebraucht" {
-  if (/high.?cube|\bhc\b/i.test(value)) return "High Cube";
-  if (/gebraucht|used|usato|použit|usado|gebruikt/i.test(value)) return "Gebraucht";
-  if (/\bneu\b|\bnew\b|nuovo|nový|nuevo|nieuw/i.test(value)) return "Neu";
-  return "Standard";
 }

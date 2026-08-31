@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getProducts } from "@/lib/catalog";
 import { isProductPurchasable } from "@/lib/products";
-import { countryName, EU_COUNTRY_CODES } from "@/lib/shipping-countries";
+import { saveInquiry } from "@/lib/inquiries";
 import { saveSubmission } from "@/lib/submission-store";
+import { countryName, EU_COUNTRY_CODES } from "@/lib/shipping-countries";
 
 const orderSchema = z.object({
   locale: z.enum(["de", "en", "nl", "it", "cs", "es"]),
@@ -64,58 +65,46 @@ export async function POST(request: Request) {
   const goodsTotal = germanTax ? catalogGross : intraEuBusiness ? subtotalNet : catalogGross;
   const deliveryCountry = countryName(parsed.countryCode, "de");
   const reference = `NC-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
-  const itemLines = verifiedLines.map(({ product, quantity, lineGross }) => `- ${product.title} | SKU ${product.sku} | ${product.size_ft || "–"} ft | Menge ${quantity} | Katalog brutto ${money(product.price_gross)} | Zeile brutto ${money(lineGross)}`);
-  const message = [
-    `[CHECKOUT · ${parsed.locale} · ${reference}]`,
-    "Kaufbestellung zur Verfügbarkeits-, Steuer- und Frachtprüfung",
-    "",
-    "Artikel:", ...itemLines,
-    "",
-    `Katalog-Warenwert brutto: ${money(catalogGross)}`,
-    germanTax ? `Warenwert netto: ${money(subtotalNet)} | MwSt. 19 %: ${money(vatAmount!)}` : intraEuBusiness ? `Innergemeinschaftliche Lieferung: Warenwert netto ${money(subtotalNet)} | MwSt. 0 % nach erfolgreicher VIES- und Transportprüfung | EU-USt-IdNr. ${parsed.vatNumber}` : `MwSt.: ausstehend (Ziellandregelung für Privatkunden prüfen)`,
-    "Lieferkosten: ausstehend (PLZ/Region, Entladung, Anzahl, Größen und Zufahrt prüfen)",
-    `Zahlungswunsch: ${parsed.paymentMethod === "sepa" ? "SEPA-Zahlungsanforderung" : "Rechnung zur Bestätigung"}`,
-    "",
-    `Lieferadresse: ${parsed.street} ${parsed.houseNumber}${parsed.addressLine2 ? `, ${parsed.addressLine2}` : ""}, ${parsed.postcode} ${parsed.city}, ${deliveryCountry}`,
-    `Entladung: ${parsed.deliveryMethod === "crane" ? "Kranentladung erforderlich" : "Bordsteinkante / kundenseitige Entladung"}`,
-    `Wunschtermin: ${parsed.preferredDate || "–"}`,
-    `Zufahrt/Aufstellort: ${parsed.accessNotes}`,
-    verifiedLines.reduce((sum, line) => sum + line.quantity, 0) > 1 ? "Mehrmengenauftrag: Frachtoptimierung und mögliche Preisabstimmung bei Schlussrechnung prüfen." : "",
-    "",
-    "Hinweis: Zahlung erst nach bestätigtem Endbetrag und Versand der Rechnung bzw. SEPA-Zahlungsanforderung.",
-  ].filter(Boolean).join("\n");
+  const totalQuantity = verifiedLines.reduce((sum, line) => sum + line.quantity, 0);
+  const message = `Bestellanfrage — ${totalQuantity} Artikel, ${money(goodsTotal)} inkl. MwSt., Referenz ${reference}`;
 
-  const payload = {
+  const details = {
+    request_type: "order",
+    reference,
+    locale: parsed.locale,
     customer_type: parsed.customerType === "business" ? "Geschäftskunde" : "Privatkunde",
-    company: parsed.company,
-    name: parsed.name,
-    email: parsed.email,
-    phone: parsed.phone,
-    vat_number: parsed.vatNumber,
-    purpose: "Sonstige",
-    base_size: normalizeSize(verifiedLines[0]?.product.size_ft || ""),
-    base_type: normalizeType(verifiedLines[0]?.product.product_type || ""),
-    modifications: [],
-    delivery_postcode: parsed.postcode,
-    delivery_city: parsed.city,
-    delivery_country: deliveryCountry,
+    company: parsed.company || null,
+    vat_number: parsed.vatNumber || null,
+    line_items: verifiedLines.map(({ product, quantity, lineGross }) => ({ sku: product.sku, title: product.title, quantity, unit_price: product.price_gross, line_gross: lineGross })),
+    pricing: { catalog_gross: catalogGross, subtotal_net: subtotalNet, vat_amount: vatAmount, goods_total: goodsTotal, currency: "EUR" },
+    delivery: {
+      street: parsed.street,
+      house_number: parsed.houseNumber,
+      address_line2: parsed.addressLine2,
+      postcode: parsed.postcode,
+      city: parsed.city,
+      country: deliveryCountry,
+      method: parsed.deliveryMethod,
+      access_notes: parsed.accessNotes,
+    },
     preferred_date: parsed.preferredDate,
-    crane_required: parsed.deliveryMethod === "crane",
-    ground_prepared: false,
-    message,
-    status: "Neu",
+    payment_method: parsed.paymentMethod,
   };
 
   try {
-    await saveSubmission("order", { reference, payload, pricing: { goodsTotal, catalogGross, subtotalNet, vatAmount }, paymentMethod: parsed.paymentMethod });
-    return NextResponse.json({ ok: true, reference, goodsTotal, catalogGross, subtotalNet, vatAmount, vatRate: germanTax ? 0.19 : intraEuBusiness ? 0 : null, vatStatus: intraEuBusiness ? "pending_vies_and_transport_verification" : germanTax ? "included" : "pending_destination_review", shippingStatus: "pending_review", paymentMethod: parsed.paymentMethod }, { status: 201 });
+    await saveInquiry({ customerName: parsed.name, customerEmail: parsed.email, customerPhone: parsed.phone, productId: null, message, details });
   } catch (error) {
-    console.error("Unable to save order", error);
-    return NextResponse.json({ error: "Submission failed" }, { status: 500 });
+    console.error("Unable to save order to Supabase, falling back to local storage", error);
+    try {
+      await saveSubmission("order", { reference, message, details, customerName: parsed.name, customerEmail: parsed.email });
+    } catch (fallbackError) {
+      console.error("Local fallback also failed for order", fallbackError);
+      return NextResponse.json({ error: "Submission failed" }, { status: 500 });
+    }
   }
+
+  return NextResponse.json({ ok: true, reference, goodsTotal, catalogGross, subtotalNet, vatAmount, vatRate: germanTax ? 0.19 : intraEuBusiness ? 0 : null, vatStatus: intraEuBusiness ? "pending_vies_and_transport_verification" : germanTax ? "included" : "pending_destination_review", shippingStatus: "pending_review", paymentMethod: parsed.paymentMethod }, { status: 201 });
 }
 
 function roundCurrency(value: number) { return Math.round((value + Number.EPSILON) * 100) / 100; }
 function money(value: number) { return new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(value); }
-function normalizeSize(value: string): "10 ft" | "20 ft" | "40 ft" | "Unsicher" { return /^10\b/.test(value) ? "10 ft" : /^20\b/.test(value) ? "20 ft" : /^40\b/.test(value) ? "40 ft" : "Unsicher"; }
-function normalizeType(value: string): "Standard" | "High Cube" | "Neu" | "Gebraucht" { return /high.?cube|\bhc\b/i.test(value) ? "High Cube" : /gebraucht|used|usato|použit|usado|gebruikt/i.test(value) ? "Gebraucht" : /\bneu\b|\bnew\b|nuovo|nový|nuevo|nieuw/i.test(value) ? "Neu" : "Standard"; }
