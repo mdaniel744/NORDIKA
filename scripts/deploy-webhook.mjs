@@ -32,29 +32,27 @@ function verifySignature(rawBody, signatureHeader) {
 }
 
 function runDeploy() {
+  // npm install must not inherit NODE_ENV=production from this process's own
+  // environment: production mode makes npm skip devDependencies (tailwindcss,
+  // typescript, postcss) that the build needs. `next build` itself must NOT
+  // get that same override -- running it under NODE_ENV=development is its
+  // own broken combination (Next.js warns "non-standard NODE_ENV value") that
+  // caused a deterministic dev/prod React mismatch crash during prerendering
+  // ("Cannot read properties of null (reading 'useContext')"), found by
+  // testing this script against the live server before wiring up GitHub.
+  const installEnv = { ...process.env, NODE_ENV: "development" };
   const commands = [
-    ["git", ["pull", "origin", "main"]],
-    // npm install (not ci): ci wipes and fully reinstalls node_modules every
-    // time, and starting the build immediately afterward raced Turbopack's
-    // parallel workers against the filesystem still settling from that many
-    // package writes, causing intermittent "Cannot read properties of null
-    // (reading 'useContext')" prerender crashes. install only touches what
-    // actually changed, which doesn't hit this race on routine deploys.
-    ["npm", ["install"]],
-    ["npm", ["run", "build"]],
-    ["pm2", ["restart", PM2_APP_NAME]],
+    ["git", ["pull", "origin", "main"], process.env],
+    ["npm", ["install"], installEnv],
+    ["npm", ["run", "build"], process.env],
+    ["pm2", ["restart", PM2_APP_NAME], process.env],
   ];
 
-  // npm ci / npm run build must not inherit NODE_ENV=production from this
-  // process's own environment: production mode makes npm skip devDependencies
-  // (tailwindcss, typescript, postcss) that the build itself needs.
-  const buildEnv = { ...process.env, NODE_ENV: "development" };
-
   (async () => {
-    for (const [command, args] of commands) {
+    for (const [command, args, env] of commands) {
       await log(`Running: ${command} ${args.join(" ")}`);
       const exitCode = await new Promise((resolvePromise) => {
-        const child = spawn(command, args, { cwd: REPO_DIR, shell: true, env: command === "pm2" ? process.env : buildEnv });
+        const child = spawn(command, args, { cwd: REPO_DIR, shell: true, env });
         child.stdout.on("data", (chunk) => log(chunk.toString().trim()));
         child.stderr.on("data", (chunk) => log(chunk.toString().trim()));
         child.on("close", resolvePromise);
