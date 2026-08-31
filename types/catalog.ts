@@ -40,14 +40,6 @@ export type Product = {
   featured?: boolean | null;
   created_date?: string;
   updated_date?: string;
-};
-
-export type CatalogMeta = {
-  catalogVersion?: number;
-  colors: string[];
-  visible?: boolean;
-  catalogLine?: string;
-  heightVariant?: string;
-  openingType?: string;
-  usedColorAvailability?: boolean;
+  family_id?: string | null;
+  colors?: string[] | null;
 };

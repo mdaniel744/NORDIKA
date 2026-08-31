@@ -1,4 +1,5 @@
 import Link from "next/link";
+import DOMPurify from "isomorphic-dompurify";
 import { ArrowRight, CheckCircle2, Ruler, ShieldCheck, Truck } from "lucide-react";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { ProductActions } from "@/components/product-actions";
@@ -7,9 +8,25 @@ import { ProductGallery } from "@/components/product-gallery";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import { href } from "@/lib/routes";
 import { conditionKey, formatPrice, localizedProductDescription, localizedProductTitle, normalizeProductType, productSlug } from "@/lib/products";
-import { parseCatalogMeta } from "@/lib/catalog";
 import { SITE } from "@/lib/site";
 import type { Product } from "@/types/catalog";
+
+const variantCopy: Record<Locale, { heading: string }> = {
+  de: { heading: "Verfügbare Zustände" },
+  en: { heading: "Available conditions" },
+  nl: { heading: "Beschikbare condities" },
+  it: { heading: "Condizioni disponibili" },
+  cs: { heading: "Dostupné stavy" },
+  es: { heading: "Estados disponibles" },
+};
+
+function variantLabel(product: Product): string {
+  return product.condition_grade && product.condition !== product.condition_grade ? `${product.condition} (${product.condition_grade})` : product.condition || "";
+}
+
+function sanitize(html: string): string {
+  return DOMPurify.sanitize(html);
+}
 
 const recoveryCopy: Record<Locale, { type: string; size: string; grade: string; color: string; depot: string; maxGross: string; payload: string; floor: string; lockbox: string; vents: string; forklift: string; wwt: string; cargo: string; yes: string; no: string; helpTitle: string; helpText: string; condition: string; sizes: string; delivery: string; returns: string }> = {
   de: { type: "Containertyp", size: "Größe", grade: "Zustandsklasse", color: "Farbe", depot: "Depot", maxGross: "Max. Gesamtgewicht", payload: "Nutzlast", floor: "Boden", lockbox: "Lockbox", vents: "Lüftungen", forklift: "Staplertaschen", wwt: "Wind- und wasserdicht", cargo: "Cargo Worthy", yes: "Ja", no: "Nein", helpTitle: "Vor dem Kauf klären", helpText: "Vergleichen Sie Zustand und Maße und planen Sie Zufahrt, Entladung sowie mögliche Rückfragen vor der Bestellung.", condition: "Zustand verstehen", sizes: "Größen vergleichen", delivery: "Lieferung planen", returns: "Rückgabe & Gewährleistung" },
@@ -26,10 +43,11 @@ export function ProductPage({ locale, product, allProducts }: { locale: Locale; 
   const slug = productSlug(product, locale);
   const price = formatPrice(product, locale);
   const recovered = recoveryCopy[locale];
-  const meta = parseCatalogMeta(product);
-  const displayColor = meta.colors.length > 0 ? meta.colors.join(", ") : printableColor(product.color);
+  const colors = product.colors || [];
+  const displayColor = colors.length > 0 ? colors.join(", ") : null;
   const images = [product.main_image || "", ...(product.additional_images || [])];
   const related = allProducts.filter((item) => item.id !== product.id && normalizeProductType(item) === normalizeProductType(product)).slice(0, 3);
+  const variants = product.family_id ? allProducts.filter((item) => item.family_id === product.family_id).sort((a, b) => a.price_gross - b.price_gross) : [];
   const specs = [
     [recovered.type, product.product_type],
     [recovered.size, product.size_ft ? `${product.size_ft} ft` : null],
@@ -51,8 +69,8 @@ export function ProductPage({ locale, product, allProducts }: { locale: Locale; 
     [recovered.vents, formatBoolean(product.vents, recovered.yes, recovered.no)],
     [recovered.forklift, formatBoolean(product.forklift_pockets, recovered.yes, recovered.no)],
   ].filter((item): item is [string, string] => Boolean(item[1]));
-  return <main><Breadcrumbs locale={locale} items={[{ label: dict.nav.shop, href: href(locale, "shop") }, { label: title }]} /><section className="bg-white pb-16 pt-6 lg:pb-24"><div className="container-shell grid gap-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(360px,.8fr)]"><ProductGallery images={images} title={title} /><div><div className="flex flex-wrap gap-2"><span className="bg-[#ffb33e] px-3 py-1 text-xs font-extrabold uppercase tracking-wider text-[#092b4e]">{dict.common[conditionKey(product)]}</span>{(product.quantity || 0) > 0 && <span className="bg-green-100 px-3 py-1 text-xs font-extrabold uppercase tracking-wider text-green-800">{dict.common.available}: {product.quantity}</span>}</div><h1 className="mt-5 text-4xl font-extrabold leading-tight sm:text-5xl">{title}</h1><p className="mt-3 text-sm font-bold text-zinc-500">{dict.product.sku}: {product.sku}</p>{(locale !== "de" || product.short_description) && <p className="mt-6 text-lg leading-8 text-zinc-600">{locale === "de" ? product.short_description : localizedProductDescription(product, locale)}</p>}<div className="my-7 border-y border-zinc-200 py-6"><p className="text-3xl font-extrabold">{price || dict.common.priceOnRequest}</p>{price && <p className="text-sm text-zinc-500">{dict.common.inclVat}</p>}</div><ProductActions locale={locale} product={product} title={title} slug={slug} colors={meta.colors} /><div className="mt-7 grid gap-3 border-t border-zinc-200 pt-6 text-sm"><p className="flex items-center gap-3"><ShieldCheck className="h-5 w-5 text-primary" />{dict.home.trust[1]}</p><p className="flex items-center gap-3"><Truck className="h-5 w-5 text-primary" />{dict.home.trust[2]}</p><p className="flex items-center gap-3"><CheckCircle2 className="h-5 w-5 text-primary" />{SITE.address.city}</p></div></div></div></section>
-    <section className="section-space bg-zinc-100"><div className="container-shell grid gap-10 lg:grid-cols-[1fr_1fr]"><article className="surface-card min-w-0 p-7 sm:p-9"><h2 className="text-3xl font-extrabold">{dict.product.description}</h2><div className="mt-5 whitespace-pre-line leading-8 text-zinc-600">{locale === "de" ? product.description || product.short_description || title : localizedProductDescription(product, locale)}</div></article><article className="surface-card min-w-0 p-7 sm:p-9"><h2 className="flex items-center gap-3 text-3xl font-extrabold"><Ruler className="h-7 w-7 text-primary" />{dict.product.specifications}</h2><dl className="mt-6 divide-y divide-zinc-200">{specs.map(([label, value]) => <div key={label} className="flex justify-between gap-5 py-3"><dt className="text-zinc-500">{label}</dt><dd className="break-words text-right font-bold">{value}</dd></div>)}</dl></article></div></section>
+  return <main><Breadcrumbs locale={locale} items={[{ label: dict.nav.shop, href: href(locale, "shop") }, { label: title }]} /><section className="bg-white pb-16 pt-6 lg:pb-24"><div className="container-shell grid gap-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(360px,.8fr)]"><ProductGallery images={images} title={title} /><div><div className="flex flex-wrap gap-2"><span className="bg-[#ffb33e] px-3 py-1 text-xs font-extrabold uppercase tracking-wider text-[#092b4e]">{dict.common[conditionKey(product)]}</span>{(product.quantity || 0) > 0 && <span className="bg-green-100 px-3 py-1 text-xs font-extrabold uppercase tracking-wider text-green-800">{dict.common.available}: {product.quantity}</span>}</div><h1 className="mt-5 text-4xl font-extrabold leading-tight sm:text-5xl">{title}</h1><p className="mt-3 text-sm font-bold text-zinc-500">{dict.product.sku}: {product.sku}</p>{(locale !== "de" || product.short_description) && <p className="mt-6 text-lg leading-8 text-zinc-600">{locale === "de" ? product.short_description : localizedProductDescription(product, locale)}</p>}<div className="my-7 border-y border-zinc-200 py-6"><p className="text-3xl font-extrabold">{price || dict.common.priceOnRequest}</p>{price && <p className="text-sm text-zinc-500">{dict.common.inclVat}</p>}</div>{variants.length > 1 && <div className="mt-7"><p className="mb-3 text-sm font-bold text-zinc-500">{variantCopy[locale].heading}</p><div className="flex flex-wrap gap-2">{variants.map((variant) => <Link key={variant.id} href={href(locale, "product", productSlug(variant, locale))} className={`border px-4 py-2 text-sm font-bold ${variant.id === product.id ? "border-primary bg-blue-50 text-primary" : "border-zinc-300 text-zinc-600 hover:border-primary"}`}>{variantLabel(variant)}</Link>)}</div></div>}<ProductActions locale={locale} product={product} title={title} slug={slug} colors={colors} /><div className="mt-7 grid gap-3 border-t border-zinc-200 pt-6 text-sm"><p className="flex items-center gap-3"><ShieldCheck className="h-5 w-5 text-primary" />{dict.home.trust[1]}</p><p className="flex items-center gap-3"><Truck className="h-5 w-5 text-primary" />{dict.home.trust[2]}</p><p className="flex items-center gap-3"><CheckCircle2 className="h-5 w-5 text-primary" />{SITE.address.city}</p></div></div></div></section>
+    <section className="section-space bg-zinc-100"><div className="container-shell grid gap-10 lg:grid-cols-[1fr_1fr]"><article className="surface-card min-w-0 p-7 sm:p-9"><h2 className="text-3xl font-extrabold">{dict.product.description}</h2>{locale === "de" && (product.description || product.short_description) ? <div className="prose prose-zinc mt-5 max-w-none leading-8 text-zinc-600" dangerouslySetInnerHTML={{ __html: sanitize(product.description || product.short_description || "") }} /> : <div className="mt-5 whitespace-pre-line leading-8 text-zinc-600">{locale === "de" ? title : localizedProductDescription(product, locale)}</div>}</article><article className="surface-card min-w-0 p-7 sm:p-9"><h2 className="flex items-center gap-3 text-3xl font-extrabold"><Ruler className="h-7 w-7 text-primary" />{dict.product.specifications}</h2><dl className="mt-6 divide-y divide-zinc-200">{specs.map(([label, value]) => <div key={label} className="flex justify-between gap-5 py-3"><dt className="text-zinc-500">{label}</dt><dd className="break-words text-right font-bold">{value}</dd></div>)}</dl></article></div></section>
     <section className="bg-white py-12"><div className="container-shell grid gap-6 md:grid-cols-[1fr_auto] md:items-center"><div><h2 className="text-2xl font-extrabold">{dict.product.deliveryTitle}</h2><p className="mt-2 max-w-3xl text-zinc-600">{dict.product.deliveryText}</p></div><Link href={href(locale, "delivery")} className="button-outline">{dict.nav.delivery}</Link></div></section>
     <section className="border-t border-zinc-200 bg-white py-14"><div className="container-shell"><h2 className="text-3xl font-extrabold">{recovered.helpTitle}</h2><p className="mt-3 max-w-3xl text-zinc-600">{recovered.helpText}</p><div className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"><HelpLink label={recovered.condition} path={href(locale, "conditions")} /><HelpLink label={recovered.sizes} path={href(locale, "guides", guidesByKey.sizes[locale])} /><HelpLink label={recovered.delivery} path={href(locale, "delivery")} /><HelpLink label={recovered.returns} path={href(locale, "returns")} /></div></div></section>
     {related.length > 0 && <section className="section-space bg-zinc-100"><div className="container-shell"><h2 className="section-title">{dict.product.related}</h2><div className="mt-9 grid gap-6 md:grid-cols-2 xl:grid-cols-3">{related.map((item) => <ProductCard key={item.id} product={item} locale={locale} />)}</div></div></section>}
@@ -61,7 +79,6 @@ export function ProductPage({ locale, product, allProducts }: { locale: Locale; 
 
 function formatDimensions(...values: Array<number | null | undefined>): string | null { return values.every((value) => typeof value === "number") ? `${values.join(" × ")} mm` : null; }
 function formatBoolean(value: boolean | null | undefined, yes: string, no: string): string | null { return typeof value === "boolean" ? (value ? yes : no) : null; }
-function printableColor(value: string | null | undefined): string | null { const trimmed = value?.trim(); return trimmed && !trimmed.startsWith("{") && !trimmed.startsWith("[") ? trimmed : null; }
 function HelpLink({ label, path }: { label: string; path: string }) { return <Link href={path} className="group flex items-center justify-between gap-4 bg-secondary p-5 font-extrabold text-[#092b4e] hover:bg-[#dcecff]"><span>{label}</span><ArrowRight className="h-5 w-5 text-primary transition group-hover:translate-x-1" /></Link>; }
 
 const guidesByKey = {
