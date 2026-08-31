@@ -34,7 +34,13 @@ function verifySignature(rawBody, signatureHeader) {
 function runDeploy() {
   const commands = [
     ["git", ["pull", "origin", "main"]],
-    ["npm", ["ci"]],
+    // npm install (not ci): ci wipes and fully reinstalls node_modules every
+    // time, and starting the build immediately afterward raced Turbopack's
+    // parallel workers against the filesystem still settling from that many
+    // package writes, causing intermittent "Cannot read properties of null
+    // (reading 'useContext')" prerender crashes. install only touches what
+    // actually changed, which doesn't hit this race on routine deploys.
+    ["npm", ["install"]],
     ["npm", ["run", "build"]],
     ["pm2", ["restart", PM2_APP_NAME]],
   ];
