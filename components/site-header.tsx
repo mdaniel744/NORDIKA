@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Check, ChevronDown, Globe2, Menu, Phone, ShoppingCart, X } from "lucide-react";
 import { BrandWordmark } from "@/components/brand-wordmark";
-import { getDictionary, localeNames, locales, type Locale } from "@/lib/i18n";
+import { getDictionary, localeNames, type Locale } from "@/lib/i18n";
 import { href, localizedDynamicTail, routeFromSegment } from "@/lib/routes";
 import { SITE } from "@/lib/site";
 
@@ -17,7 +17,7 @@ function localeHref(pathname: string, current: Locale, target: Locale): string {
   return href(target, key, localizedDynamicTail(current, target, key, tail));
 }
 
-export function SiteHeader({ locale }: { locale: Locale }) {
+export function SiteHeader({ locale, enabledLocales }: { locale: Locale; enabledLocales: Locale[] }) {
   const dict = getDictionary(locale);
   const pathname = usePathname() || `/${locale}`;
   const [open, setOpen] = useState(false);
@@ -68,7 +68,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
             </button>
             {languageOpen && (
               <div role="menu" className="absolute right-0 top-[calc(100%+8px)] z-20 min-w-52 border border-primary/15 bg-white p-1.5 text-sm text-zinc-800 shadow-[0_18px_50px_rgba(13,87,165,0.18)]">
-                {locales.map((item) => (
+                {enabledLocales.map((item) => (
                   <Link
                     key={item}
                     href={localeHref(pathname, locale, item)}
