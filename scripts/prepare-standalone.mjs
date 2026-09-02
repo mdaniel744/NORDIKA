@@ -14,3 +14,10 @@ cpSync(staticSource, resolve(standaloneRoot, ".next/static"), { recursive: true,
 if (existsSync(resolve("public"))) {
   cpSync(resolve("public"), resolve(standaloneRoot, "public"), { recursive: true, force: true });
 }
+
+// The standalone server.js changes its working directory to its own folder
+// before loading env files, so it never sees .env.local sitting at the
+// project root -- it has to be copied alongside server.js explicitly.
+if (existsSync(resolve(".env.local"))) {
+  cpSync(resolve(".env.local"), resolve(standaloneRoot, ".env.local"), { force: true });
+}
