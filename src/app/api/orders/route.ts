@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getProducts } from "@/lib/catalog";
-import { isProductPurchasable } from "@/lib/products";
-import { saveInquiry } from "@/lib/inquiries";
+import { STORE_ID } from "@/lib/supabase";
 import { saveSubmission } from "@/lib/submission-store";
 import { countryName, EU_COUNTRY_CODES } from "@/lib/shipping-countries";
 
@@ -49,62 +47,64 @@ export async function POST(request: Request) {
   if (parsed.customerType === "business" && !parsed.company) return NextResponse.json({ error: "Company is required" }, { status: 400 });
   if (parsed.customerType === "business" && parsed.countryCode !== "DE" && !parsed.vatNumber) return NextResponse.json({ error: "A valid EU VAT ID is required for a zero-rated intra-EU supply" }, { status: 400 });
 
-  const products = await getProducts();
-  const lines = parsed.items.map((requested) => {
-    const product = products.find((item) => item.id === requested.id && item.sku === requested.sku);
-    if (!product || !isProductPurchasable(product)) return null;
-    return { product, quantity: requested.quantity, lineGross: roundCurrency(product.price_gross * requested.quantity) };
-  });
-  if (lines.some((line) => !line)) return NextResponse.json({ error: "One or more products are unavailable" }, { status: 409 });
-  const verifiedLines = lines.filter((line): line is NonNullable<typeof line> => Boolean(line));
-  const catalogGross = roundCurrency(verifiedLines.reduce((sum, line) => sum + line.lineGross, 0));
-  const subtotalNet = roundCurrency(catalogGross / 1.19);
-  const germanTax = parsed.countryCode === "DE";
-  const intraEuBusiness = parsed.customerType === "business" && !germanTax;
-  const vatAmount = germanTax ? roundCurrency(catalogGross - subtotalNet) : intraEuBusiness ? 0 : null;
-  const goodsTotal = germanTax ? catalogGross : intraEuBusiness ? subtotalNet : catalogGross;
   const deliveryCountry = countryName(parsed.countryCode, "de");
-  const reference = `NC-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
-  const totalQuantity = verifiedLines.reduce((sum, line) => sum + line.quantity, 0);
-  const message = `Bestellanfrage — ${totalQuantity} Artikel, ${money(goodsTotal)} inkl. MwSt., Referenz ${reference}`;
-
-  const details = {
-    request_type: "order",
-    reference,
-    locale: parsed.locale,
-    customer_type: parsed.customerType === "business" ? "Geschäftskunde" : "Privatkunde",
-    company: parsed.company || null,
-    vat_number: parsed.vatNumber || null,
-    line_items: verifiedLines.map(({ product, quantity, lineGross }) => ({ sku: product.sku, title: product.title, quantity, unit_price: product.price_gross, line_gross: lineGross })),
-    pricing: { catalog_gross: catalogGross, subtotal_net: subtotalNet, vat_amount: vatAmount, goods_total: goodsTotal, currency: "EUR" },
-    delivery: {
-      street: parsed.street,
-      house_number: parsed.houseNumber,
-      address_line2: parsed.addressLine2,
-      postcode: parsed.postcode,
-      city: parsed.city,
-      country: deliveryCountry,
-      method: parsed.deliveryMethod,
-      access_notes: parsed.accessNotes,
-    },
-    preferred_date: parsed.preferredDate,
-    payment_method: parsed.paymentMethod,
+  const address = {
+    street: parsed.street,
+    houseNumber: parsed.houseNumber,
+    addressLine2: parsed.addressLine2 || undefined,
+    postcode: parsed.postcode,
+    city: parsed.city,
+    country: deliveryCountry,
   };
 
-  try {
-    await saveInquiry({ customerName: parsed.name, customerEmail: parsed.email, customerPhone: parsed.phone, productId: null, message, details });
-  } catch (error) {
-    console.error("Unable to save order to Supabase, falling back to local storage", error);
-    try {
-      await saveSubmission("order", { reference, message, details, customerName: parsed.name, customerEmail: parsed.email });
-    } catch (fallbackError) {
-      console.error("Local fallback also failed for order", fallbackError);
-      return NextResponse.json({ error: "Submission failed" }, { status: 500 });
-    }
+  // Fields the platform's checkout_orders schema has no place for yet (delivery
+  // method, preferred date, payment preference, business VAT/company) are
+  // folded into customerNote as readable text rather than dropped or invented
+  // as undocumented request fields.
+  const customerNote = [
+    parsed.customerType === "business" ? `Geschäftskunde${parsed.company ? ` – ${parsed.company}` : ""}${parsed.vatNumber ? ` (USt-IdNr. ${parsed.vatNumber})` : ""}` : "Privatkunde",
+    `Entladung: ${parsed.deliveryMethod === "crane" ? "Kranentladung erforderlich" : "Bordsteinkante / Selbstentladung"}`,
+    parsed.preferredDate ? `Wunschtermin: ${parsed.preferredDate}` : null,
+    `Zahlungswunsch: ${parsed.paymentMethod === "sepa" ? "SEPA-Zahlungsanforderung" : "Rechnung zur Bestätigung"}`,
+    `Zufahrt/Aufstellort: ${parsed.accessNotes}`,
+  ].filter(Boolean).join(" | ");
+
+  const checkoutPayload = {
+    locale: parsed.locale,
+    customerName: parsed.name,
+    customerEmail: parsed.email,
+    customerPhone: parsed.phone,
+    billingAddress: address,
+    deliveryAddress: address,
+    customerNote,
+    lineItems: parsed.items.map((item) => ({ productId: item.id, quantity: item.quantity })),
+  };
+
+  const platformUrl = process.env.ECOM_PLATFORM_API_URL;
+  if (!platformUrl) {
+    console.error("ECOM_PLATFORM_API_URL is not configured");
+    return NextResponse.json({ error: "Submission failed" }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true, reference, goodsTotal, catalogGross, subtotalNet, vatAmount, vatRate: germanTax ? 0.19 : intraEuBusiness ? 0 : null, vatStatus: intraEuBusiness ? "pending_vies_and_transport_verification" : germanTax ? "included" : "pending_destination_review", shippingStatus: "pending_review", paymentMethod: parsed.paymentMethod }, { status: 201 });
+  try {
+    const response = await fetch(`${platformUrl}/api/storefront/checkout/${STORE_ID}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(checkoutPayload),
+      cache: "no-store",
+    });
+    const data = await response.json().catch(() => null);
+    if (!response.ok) {
+      console.error("Platform checkout submission failed", response.status, data);
+      // Log locally so nothing is silently lost, but do not tell the customer
+      // it succeeded -- this is a real commercial order, not a contact form.
+      await saveSubmission("order", { checkoutPayload, platformStatus: response.status, platformError: data }).catch((fallbackError) => console.error("Local fallback logging also failed for order", fallbackError));
+      return NextResponse.json({ error: data?.message || data?.error || "Submission failed" }, { status: response.status >= 400 && response.status < 500 ? response.status : 502 });
+    }
+    return NextResponse.json({ ok: true, reference: data?.order?.orderNumber || data?.order?.id }, { status: 201 });
+  } catch (error) {
+    console.error("Platform checkout transport failed", error);
+    await saveSubmission("order", { checkoutPayload, transportError: error instanceof Error ? error.message : String(error) }).catch((fallbackError) => console.error("Local fallback logging also failed for order", fallbackError));
+    return NextResponse.json({ error: "Submission failed" }, { status: 502 });
+  }
 }
-
-function roundCurrency(value: number) { return Math.round((value + Number.EPSILON) * 100) / 100; }
-function money(value: number) { return new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(value); }
