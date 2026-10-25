@@ -3,33 +3,33 @@
 @tailwind utilities;
 
 :root {
-  --background: 210 25% 98%;
-  --foreground: 212 58% 13%;
+  --background: 0 0% 100%;
+  --foreground: 240 8% 13%;
   --card: 0 0% 100%;
-  --card-foreground: 212 58% 13%;
+  --card-foreground: 240 8% 13%;
   --popover: 0 0% 100%;
-  --popover-foreground: 212 58% 13%;
+  --popover-foreground: 240 8% 13%;
   --primary: 210 85% 35%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 210 52% 95%;
-  --secondary-foreground: 210 85% 28%;
-  --muted: 210 24% 95%;
-  --muted-foreground: 212 12% 39%;
+  --secondary: 240 5% 96%;
+  --secondary-foreground: 240 8% 16%;
+  --muted: 240 5% 96%;
+  --muted-foreground: 240 5% 43%;
   --accent: 37 100% 62%;
-  --accent-foreground: 212 58% 13%;
+  --accent-foreground: 240 8% 13%;
   --destructive: 0 72% 51%;
   --destructive-foreground: 0 0% 100%;
-  --border: 210 18% 82%;
-  --input: 210 18% 88%;
+  --border: 240 6% 90%;
+  --input: 240 6% 92%;
   --ring: 210 85% 35%;
   --success: 136 36% 30%;
   --success-foreground: 0 0% 100%;
-  --radius: 0.25rem;
+  --radius: 0rem;
 }
 
 * { border-color: hsl(var(--border)); }
 
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; scroll-padding-top: 7rem; }
 
 body {
   min-width: 320px;
@@ -51,15 +51,21 @@ h1, h2, h3, h4, h5, h6 {
 :focus-visible { outline: 3px solid hsl(var(--primary)); outline-offset: 3px; }
 
 @layer components {
-  .container-shell { @apply mx-auto w-full max-w-[1440px] px-4 sm:px-6 lg:px-10; }
-  .section-space { @apply py-16 sm:py-20 lg:py-28; }
-  .eyebrow { @apply mb-3 inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.18em] text-primary; }
-  .display-title { @apply text-balance text-4xl font-extrabold leading-[1.04] sm:text-5xl lg:text-6xl; }
-  .section-title { @apply text-balance text-3xl font-extrabold leading-tight sm:text-4xl lg:text-5xl; }
-  .button-primary { @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-sm bg-[#ffb33e] px-6 py-3 text-sm font-extrabold text-[#092b4e] transition hover:bg-[#f0a225]; }
-  .button-dark { @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-sm bg-[#0d57a5] px-6 py-3 text-sm font-extrabold text-white transition hover:bg-[#084584]; }
-  .button-outline { @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-sm border border-primary/25 bg-white px-6 py-3 text-sm font-extrabold text-primary transition hover:border-primary hover:bg-secondary; }
-  .surface-card { @apply border border-primary/10 bg-white shadow-[0_18px_50px_rgba(13,87,165,0.10)]; }
+  .container-shell { @apply mx-auto w-full max-w-[1320px] px-5 sm:px-6; }
+  .section-space { @apply py-10 md:py-14; }
+  .eyebrow { @apply mb-3 inline-flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.2em] text-primary; }
+  .display-title { @apply text-balance text-[2.45rem] font-extrabold leading-[1.08] tracking-[-0.05em] sm:text-5xl lg:text-[3.65rem]; }
+  .section-title { @apply text-balance text-2xl font-extrabold leading-tight tracking-[-0.035em] md:text-3xl lg:text-4xl; }
+  .button-primary { @apply inline-flex min-h-12 items-center justify-center gap-2 bg-primary px-6 py-3 text-sm font-extrabold text-white shadow-[0_8px_20px_rgba(13,87,165,0.14)] transition hover:-translate-y-0.5 hover:bg-[#084584] hover:shadow-[0_11px_24px_rgba(13,87,165,0.22)]; }
+  .button-dark { @apply inline-flex min-h-12 items-center justify-center gap-2 bg-primary px-6 py-3 text-sm font-extrabold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#084584]; }
+  .button-outline { @apply inline-flex min-h-12 items-center justify-center gap-2 border border-zinc-200 bg-[#f5f5f6] px-6 py-3 text-sm font-extrabold text-zinc-800 transition hover:-translate-y-0.5 hover:border-primary/25 hover:bg-primary/10 hover:text-primary; }
+  .surface-card { @apply border border-zinc-100 bg-white shadow-[0_12px_35px_rgba(0,0,0,0.07)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_45px_rgba(0,0,0,0.11)]; }
+}
+
+button,
+a,
+img {
+  border-radius: 0 !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -28,30 +28,30 @@ export function SiteFooter({ locale }: { locale: Locale }) {
   ];
 
   return (
-    <footer className="bg-[#031f3b] text-blue-50/75">
-      <div className="container-shell grid gap-12 py-14 lg:grid-cols-[1fr_2.4fr] lg:py-20">
+    <footer className="bg-white text-zinc-600 shadow-[0_-8px_30px_rgba(0,0,0,0.04)]">
+      <div className="container-shell grid gap-10 py-10 md:py-12 lg:grid-cols-[1fr_2.4fr]">
         <div>
-          <div className="mb-6"><BrandWordmark inverse /></div>
-          <p className="max-w-md text-sm leading-7 text-blue-50/65">{dict.footer.summary}</p>
-          <div className="mt-7 grid gap-3 text-sm">
-            <a href={`tel:${SITE.phoneHref}`} className="flex items-center gap-3 hover:text-white"><Phone className="h-4 w-4 text-[#ffb33e]" />{SITE.phone}</a>
-            <a href={`mailto:${SITE.email}`} className="flex items-center gap-3 hover:text-white"><Mail className="h-4 w-4 text-[#ffb33e]" />{SITE.email}</a>
-            <span className="flex items-start gap-3"><MapPin className="mt-1 h-4 w-4 shrink-0 text-[#ffb33e]" />{SITE.address.street}, {SITE.address.postalCode} {SITE.address.city}</span>
+          <div className="mb-5"><BrandWordmark /></div>
+          <p className="max-w-md text-sm leading-7 text-zinc-500">{dict.footer.summary}</p>
+          <div className="mt-6 grid gap-2.5 text-sm text-zinc-500">
+            <a href={`tel:${SITE.phoneHref}`} className="flex items-center gap-3 transition hover:text-primary"><Phone className="h-4 w-4 text-zinc-800" />{SITE.phone}</a>
+            <a href={`mailto:${SITE.email}`} className="flex items-center gap-3 transition hover:text-primary"><Mail className="h-4 w-4 text-zinc-800" />{SITE.email}</a>
+            <span className="flex items-start gap-3"><MapPin className="mt-1 h-4 w-4 shrink-0 text-zinc-800" />{SITE.address.street}, {SITE.address.postalCode} {SITE.address.city}</span>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-8 md:grid-cols-3 xl:grid-cols-5">
           {columns.map((column) => (
             <div key={column.title}>
-              <h2 className="mb-4 text-sm font-extrabold uppercase tracking-wider text-white">{column.title}</h2>
+              <h2 className="mb-4 text-sm font-extrabold uppercase tracking-wider text-zinc-900">{column.title}</h2>
               <ul className="grid gap-2.5 text-sm">
-                {column.links.map((link) => <li key={link.path}><Link className="hover:text-white" href={link.path}>{link.label}</Link></li>)}
+                {column.links.map((link) => <li key={link.path}><Link className="transition hover:text-primary" href={link.path}>{link.label}</Link></li>)}
               </ul>
             </div>
           ))}
         </div>
       </div>
-      <div className="border-t border-white/15">
-        <div className="container-shell flex flex-col gap-2 py-5 text-xs text-blue-50/45 sm:flex-row sm:justify-between">
+      <div className="bg-secondary/70">
+        <div className="container-shell flex flex-col gap-2 py-5 text-xs text-zinc-500 sm:flex-row sm:justify-between">
           <p>© {new Date().getFullYear()} {SITE.legalName}. {dict.footer.rights}</p>
           <p>{dict.footer.notice}</p>
         </div>

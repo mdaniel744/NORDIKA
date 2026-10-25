@@ -217,64 +217,78 @@ export function HomePage({ locale, products }: { locale: Locale; products: Produ
 
   return (
     <main>
-      <section className="relative isolate min-h-[650px] overflow-hidden bg-[#090d12] text-white lg:min-h-[720px]">
-        <Image src={IMAGES.hero} alt={`${SITE.name} container stock`} fill priority sizes="100vw" className="object-cover opacity-85" />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(7,10,14,.94)_0%,rgba(7,10,14,.78)_48%,rgba(7,10,14,.24)_100%)]" />
-        <div className="container-shell relative flex min-h-[650px] items-center py-20 lg:min-h-[720px]">
-          <div className="max-w-3xl">
-            <p className="eyebrow text-[#ffb33e]">{dict.home.eyebrow}</p>
-            <h1 className="display-title max-w-3xl">{dict.home.title}</h1>
-            <p className="mt-7 max-w-2xl text-lg leading-8 text-zinc-100 sm:text-xl">{dict.home.intro}</p>
-            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+      <section className="overflow-hidden bg-white">
+        <div className="container-shell grid items-center gap-8 py-8 md:grid-cols-[minmax(0,.88fr)_minmax(0,1.12fr)] md:py-10 lg:gap-12">
+          <div className="relative z-10 py-2 md:py-5">
+            <p className="eyebrow"><span className="h-1.5 w-1.5 bg-[#ffb33e]" />{dict.home.eyebrow}</p>
+            <h1 className="display-title max-w-2xl text-zinc-900">{dict.home.title}</h1>
+            <p className="mt-5 max-w-xl leading-7 text-zinc-600 md:text-lg">{dict.home.intro}</p>
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
               <Link className="button-primary" href={href(locale, "shop")}>{dict.home.browse}<ArrowRight className="h-4 w-4" /></Link>
-              <Link className="button-outline border-white/40 bg-white/10 text-white backdrop-blur hover:border-white hover:bg-white hover:text-primary" href={href(locale, "quote")}>{dict.home.request}</Link>
+              <Link className="button-outline" href={href(locale, "quote")}>{dict.home.request}<span aria-hidden="true">↗</span></Link>
             </div>
-            <ul className="mt-10 flex flex-col gap-3 text-sm font-bold text-zinc-100 sm:flex-row sm:flex-wrap sm:gap-6">
-              {dict.home.trust.map((item) => <li key={item} className="flex items-center gap-2"><span className="grid h-5 w-5 place-items-center rounded-full bg-[#ffb33e]"><Check className="h-3 w-3 text-[#092b4e]" /></span>{item}</li>)}
-            </ul>
+            <a href={`tel:${SITE.phoneHref}`} className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-zinc-500 transition hover:text-primary"><Phone className="h-4 w-4 text-zinc-800" />{SITE.phone}</a>
+            <div className="mt-8 flex items-center gap-3"><strong className="text-xl font-extrabold tracking-[-0.04em] text-zinc-900">{SITE.address.city}</strong><span className="max-w-44 text-xs leading-5 text-zinc-500">{statsCopy[locale][0]}</span></div>
+          </div>
+          <div className="min-w-0">
+            <div className="relative aspect-[4/3] overflow-hidden bg-[#10151b] shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
+              <Image src={IMAGES.container40hc} alt={`${SITE.name} high-cube container`} fill priority sizes="(max-width: 768px) 100vw, 58vw" className="object-cover" />
+            </div>
+            <nav className="mt-2 grid grid-cols-3 gap-2" aria-label={dict.common.size}>
+              {["10", "20", "40"].map((size) => <Link key={size} href={`${href(locale, "shop")}?size=${size}`} className="group flex min-h-11 items-center justify-between bg-secondary px-4 text-sm font-bold text-zinc-700 transition hover:-translate-y-0.5 hover:bg-primary/10 hover:text-primary"><span>{size} ft</span><ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" /></Link>)}
+            </nav>
           </div>
         </div>
       </section>
 
-      <section className="relative z-10 -mt-10 px-4 sm:px-6 lg:px-10">
-        <div className="mx-auto grid w-full max-w-[1360px] gap-6 border-b-4 border-[#0d57a5] bg-white p-6 shadow-[0_22px_60px_rgba(5,42,78,0.18)] md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:p-8 lg:px-10">
+      <section className="bg-white shadow-[0_8px_30px_rgba(0,0,0,0.05)]">
+        <div className="container-shell flex flex-wrap items-center justify-center gap-x-10 gap-y-4 py-5">
+          {dict.home.trust.map((item) => <div key={item} className="flex items-center gap-2.5 text-sm font-semibold text-zinc-700"><span className="grid h-5 w-5 place-items-center bg-secondary"><Check className="h-3.5 w-3.5 text-zinc-800" /></span>{item}</div>)}
+        </div>
+      </section>
+
+      <section className="bg-secondary/70">
+        <div className="container-shell grid gap-5 py-7 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
           <div className="max-w-4xl">
-            <p className="mb-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#0d57a5]">{enquiryCopy[locale].eyebrow}</p>
-            <h2 className="text-2xl font-extrabold leading-tight text-[#092b4e] sm:text-3xl">{enquiryCopy[locale].title}</h2>
-            <p className="mt-2 text-zinc-600">{enquiryCopy[locale].text}</p>
+            <p className="mb-2 text-[11px] font-extrabold uppercase tracking-[0.2em] text-primary">{enquiryCopy[locale].eyebrow}</p>
+            <h2 className="text-xl font-extrabold leading-tight text-zinc-900 sm:text-2xl">{enquiryCopy[locale].title}</h2>
+            <p className="mt-1.5 text-sm leading-6 text-zinc-600">{enquiryCopy[locale].text}</p>
           </div>
           <Link href={href(locale, "quote")} className="button-primary shrink-0">{dict.nav.quote}<ArrowRight className="h-4 w-4" /></Link>
         </div>
       </section>
 
-      <section className="section-space bg-white pt-20 sm:pt-24 lg:pt-28">
-        <div className="container-shell grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(460px,.9fr)] lg:items-center">
+      <section className="section-space bg-white">
+        <div className="container-shell grid items-center gap-9 lg:grid-cols-2 lg:gap-12">
+          <div className="relative aspect-[4/3] overflow-hidden bg-secondary shadow-[0_18px_45px_rgba(0,0,0,0.10)]">
+            <Image src={IMAGES.homeMainz} alt={`${SITE.name} container depot in Mainz`} fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover" />
+            <div className="absolute bottom-0 right-0 bg-primary px-6 py-5 text-white"><strong className="block text-2xl font-extrabold">{SITE.address.city}</strong><span className="text-xs text-white/75">{statsCopy[locale][0]}</span></div>
+          </div>
           <div>
             <p className="eyebrow">{dict.home.aboutEyebrow}</p>
             <h2 className="section-title max-w-3xl">{dict.home.aboutTitle}</h2>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-zinc-600">{dict.home.aboutText}</p>
+            <p className="mt-5 max-w-2xl leading-7 text-zinc-600">{dict.home.aboutText}</p>
             <Link href={href(locale, "about")} className="button-outline mt-8">{dict.home.learnMore}<ArrowRight className="h-4 w-4" /></Link>
-          </div>
-          <div className="grid border border-primary/15 bg-secondary sm:grid-cols-3">
-            {stats.map((stat) => <div key={stat.label} className="border-b border-primary/15 p-7 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0"><p className="text-4xl font-extrabold text-primary">{stat.value}</p><p className="mt-2 text-sm font-bold text-zinc-600">{stat.label}</p></div>)}
+            <div className="mt-8 grid grid-cols-3 border-t border-zinc-200 pt-6">
+              {stats.map((stat) => <div key={stat.label} className="border-r border-zinc-200 pr-4 last:border-r-0 last:pl-4 sm:px-4 sm:first:pl-0"><p className="text-2xl font-extrabold text-zinc-900">{stat.value}</p><p className="mt-1 text-xs font-semibold leading-5 text-zinc-500">{stat.label}</p></div>)}
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="section-space bg-[#073a70] text-white">
+      <section className="section-space bg-secondary/50">
         <div className="container-shell">
-          <p className="eyebrow text-[#ffb33e]">{dict.home.categoriesEyebrow}</p>
+          <p className="eyebrow">{dict.home.categoriesEyebrow}</p>
           <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
             <h2 className="section-title max-w-3xl">{dict.home.categoriesTitle}</h2>
-            <Link href={href(locale, "types")} className="inline-flex items-center gap-2 font-extrabold text-white hover:text-[#ffb33e]">{dict.common.viewAll}<ArrowRight className="h-4 w-4" /></Link>
+            <Link href={href(locale, "types")} className="inline-flex items-center gap-2 text-sm font-extrabold text-primary hover:text-zinc-900">{dict.common.viewAll}<ArrowRight className="h-4 w-4" /></Link>
           </div>
-          <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+          <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
             {categoryCopy[locale].map((item, index) => {
               const Icon = categoryIcons[index];
-              return <Link key={item.title} href={href(locale, categoryLinks[index])} className="group relative min-h-[330px] overflow-hidden border border-white/10 bg-[#090d12] p-7 text-white">
-                <Image src={categoryImages[index]} alt="" fill sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw" className="object-cover opacity-85 transition duration-500 group-hover:scale-105" />
-                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(7,10,14,.16)_0%,rgba(7,10,14,.52)_52%,rgba(7,10,14,.95)_100%)]" />
-                <div className="relative flex h-full flex-col justify-end"><Icon className="mb-auto h-9 w-9 text-[#ffb33e] drop-shadow-[0_2px_8px_rgba(0,0,0,.75)]" /><h3 className="text-2xl font-extrabold">{item.title}</h3><p className="mt-2 max-w-md text-sm leading-6 text-zinc-100/90">{item.text}</p><span className="mt-5 inline-flex items-center gap-2 text-sm font-extrabold text-[#ffb33e]">{dict.common.viewProduct}<ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" /></span></div>
+              return <Link key={item.title} href={href(locale, categoryLinks[index])} className="group flex min-h-full flex-col overflow-hidden bg-white shadow-[0_12px_35px_rgba(0,0,0,0.07)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
+                <div className="relative aspect-[16/10] overflow-hidden bg-zinc-100"><Image src={categoryImages[index]} alt="" fill sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw" className="object-cover transition duration-700 group-hover:scale-105" /></div>
+                <div className="flex flex-1 flex-col p-5"><div className="flex items-start justify-between gap-4"><h3 className="text-lg font-extrabold leading-snug text-zinc-900">{item.title}</h3><Icon className="h-5 w-5 shrink-0 text-zinc-700" /></div><p className="mt-2 text-sm leading-6 text-zinc-500">{item.text}</p><span className="mt-5 inline-flex items-center gap-2 text-sm font-extrabold text-primary">{dict.common.viewProduct}<ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" /></span></div>
               </Link>;
             })}
           </div>
@@ -288,60 +302,57 @@ export function HomePage({ locale, products }: { locale: Locale; products: Produ
             <div><h2 className="section-title">{dict.home.featuredTitle}</h2><p className="mt-4 max-w-2xl text-zinc-600">{dict.home.featuredText}</p></div>
             <Link href={href(locale, "shop")} className="button-dark">{dict.common.viewAll}<ArrowRight className="h-4 w-4" /></Link>
           </div>
-          {products.length > 0 ? <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">{products.slice(0, 6).map((product) => <ProductCard key={product.id} product={product} locale={locale} />)}</div> : <p className="mt-10 surface-card p-8 text-zinc-600">{dict.common.noResults}</p>}
+          {products.length > 0 ? <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">{products.slice(0, 6).map((product) => <ProductCard key={product.id} product={product} locale={locale} />)}</div> : <p className="mt-8 surface-card p-8 text-zinc-600">{dict.common.noResults}</p>}
         </div>
       </section>
 
-      <section className="section-space bg-[#073a70] text-white">
+      <section className="section-space bg-zinc-50">
         <div className="container-shell">
-          <div className="max-w-3xl"><p className="eyebrow text-[#ffb33e]">{benefitsCopy[locale].eyebrow}</p><h2 className="section-title">{benefitsCopy[locale].title}</h2><p className="mt-5 text-lg leading-8 text-blue-50/80">{benefitsCopy[locale].intro}</p></div>
-          <div className="mt-12 grid border-l border-t border-white/15 md:grid-cols-2 xl:grid-cols-3">
-            {benefitsCopy[locale].items.map((item, index) => { const Icon = benefitIcons[index]; return <article key={item.title} className="border-b border-r border-white/15 p-7 lg:p-9"><span className="grid h-12 w-12 place-items-center bg-[#ffb33e] text-[#092b4e]"><Icon className="h-6 w-6" /></span><h3 className="mt-6 text-xl font-extrabold">{item.title}</h3><p className="mt-3 leading-7 text-blue-50/75">{item.text}</p></article>; })}
+          <div className="mx-auto max-w-3xl text-center"><p className="eyebrow">{benefitsCopy[locale].eyebrow}</p><h2 className="section-title">{benefitsCopy[locale].title}</h2><p className="mt-4 leading-7 text-zinc-600">{benefitsCopy[locale].intro}</p></div>
+          <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {benefitsCopy[locale].items.map((item, index) => { const Icon = benefitIcons[index]; return <article key={item.title} className="bg-white p-7 shadow-[0_12px_35px_rgba(0,0,0,0.07)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_45px_rgba(0,0,0,0.11)]"><span className="grid h-11 w-11 place-items-center bg-secondary text-zinc-800"><Icon className="h-5 w-5" /></span><h3 className="mt-5 text-lg font-extrabold text-zinc-900">{item.title}</h3><p className="mt-2 text-sm leading-7 text-zinc-500">{item.text}</p></article>; })}
           </div>
         </div>
       </section>
 
-      <section className="section-space bg-secondary">
+      <section className="section-space bg-white">
         <div className="container-shell grid gap-8 xl:grid-cols-[1.05fr_.95fr]">
-          <article className="bg-white p-7 sm:p-10">
+          <article className="bg-secondary/60 p-7 sm:p-9">
             <p className="eyebrow">{decision.eyebrow}</p><h2 className="section-title max-w-3xl">{decision.title}</h2><p className="mt-5 max-w-3xl text-lg leading-8 text-zinc-600">{decision.intro}</p>
-            <div className="mt-8 grid gap-5 md:grid-cols-2"><div className="border-l-4 border-[#ffb33e] bg-zinc-50 p-6"><h3 className="text-xl font-extrabold">{decision.oneTrip}</h3><p className="mt-3 leading-7 text-zinc-600">{decision.oneTripText}</p></div><div className="border-l-4 border-primary bg-zinc-50 p-6"><h3 className="text-xl font-extrabold">{decision.used}</h3><p className="mt-3 leading-7 text-zinc-600">{decision.usedText}</p></div></div>
+            <div className="mt-7 grid gap-4 md:grid-cols-2"><div className="border-l-4 border-[#ffb33e] bg-white p-6 shadow-sm"><h3 className="text-lg font-extrabold">{decision.oneTrip}</h3><p className="mt-2 text-sm leading-7 text-zinc-600">{decision.oneTripText}</p></div><div className="border-l-4 border-primary bg-white p-6 shadow-sm"><h3 className="text-lg font-extrabold">{decision.used}</h3><p className="mt-2 text-sm leading-7 text-zinc-600">{decision.usedText}</p></div></div>
             <Link href={href(locale, "conditions")} className="button-outline mt-7">{decision.conditionLink}<ArrowRight className="h-4 w-4" /></Link>
           </article>
-          <article className="bg-[#073a70] p-7 text-white sm:p-10"><p className="eyebrow text-[#ffb33e]">{decision.guidesEyebrow}</p><h2 className="text-3xl font-extrabold leading-tight sm:text-4xl">{decision.guidesTitle}</h2><p className="mt-5 leading-7 text-blue-50/80">{decision.guidesIntro}</p><nav className="mt-8 grid gap-3" aria-label={decision.guidesTitle}>{guides.map((guide) => <Link key={guide.key} href={href(locale, "guides", guide.slugs[locale])} className="group flex items-center justify-between gap-4 border border-white/20 px-5 py-4 font-bold hover:border-[#ffb33e] hover:text-[#ffb33e]">{guide.titles[locale]}<ArrowRight className="h-4 w-4 shrink-0 transition group-hover:translate-x-1" /></Link>)}</nav></article>
+          <article className="bg-zinc-50 p-7 shadow-[0_12px_35px_rgba(0,0,0,0.07)] sm:p-9"><p className="eyebrow">{decision.guidesEyebrow}</p><h2 className="text-2xl font-extrabold leading-tight sm:text-3xl">{decision.guidesTitle}</h2><p className="mt-4 leading-7 text-zinc-600">{decision.guidesIntro}</p><nav className="mt-7 grid gap-2" aria-label={decision.guidesTitle}>{guides.map((guide) => <Link key={guide.key} href={href(locale, "guides", guide.slugs[locale])} className="group flex items-center justify-between gap-4 bg-white px-5 py-4 text-sm font-bold text-zinc-800 transition hover:-translate-y-0.5 hover:text-primary hover:shadow-sm">{guide.titles[locale]}<ArrowRight className="h-4 w-4 shrink-0 transition group-hover:translate-x-1" /></Link>)}</nav></article>
         </div>
       </section>
 
-      <section className="section-space bg-white">
+      <section className="section-space bg-zinc-50">
         <div className="container-shell grid gap-12 lg:grid-cols-[1fr_1.1fr] lg:items-center">
-          <div className="relative aspect-[5/4] overflow-hidden bg-zinc-200"><Image src={IMAGES.homeProcess} alt={`${SITE.name} container yard`} fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover" /></div>
+          <div className="relative aspect-[5/4] overflow-hidden bg-zinc-200 shadow-[0_18px_45px_rgba(0,0,0,0.10)]"><Image src={IMAGES.homeProcess} alt={`${SITE.name} container yard`} fill sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover" /></div>
           <div>
             <p className="eyebrow">{dict.home.processEyebrow}</p><h2 className="section-title">{dict.home.processTitle}</h2>
-            <ol className="mt-9 grid gap-7">{dict.home.process.map((step, index) => <li key={step.title} className="grid grid-cols-[48px_1fr] gap-5"><span className="grid h-12 w-12 place-items-center bg-[#ffb33e] font-extrabold text-[#092b4e]">0{index + 1}</span><div><h3 className="text-xl font-extrabold">{step.title}</h3><p className="mt-1 text-zinc-600">{step.text}</p></div></li>)}</ol>
+            <ol className="mt-7 grid gap-3">{dict.home.process.map((step, index) => <li key={step.title} className="grid grid-cols-[48px_1fr] gap-5 bg-white p-5 shadow-[0_9px_26px_rgba(0,0,0,0.06)]"><span className="font-mono text-2xl font-extrabold text-primary">0{index + 1}</span><div><h3 className="text-lg font-extrabold">{step.title}</h3><p className="mt-1 text-sm leading-6 text-zinc-600">{step.text}</p></div></li>)}</ol>
             <Link href={href(locale, "delivery")} className="button-outline mt-9">{dict.nav.delivery}<ArrowRight className="h-4 w-4" /></Link>
           </div>
         </div>
       </section>
 
-      <section className="section-space bg-secondary">
+      <section className="section-space bg-white">
         <div className="container-shell grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(380px,.8fr)] lg:items-center">
           <div>
             <p className="eyebrow">{faqCopy[locale].eyebrow}</p><h2 className="section-title max-w-3xl">{faqCopy[locale].title}</h2><p className="mt-5 max-w-2xl text-zinc-600">{faqCopy[locale].intro}</p>
-            <div className="mt-8 border-t border-primary/20">{faqCopy[locale].items.map((item, index) => <details key={item.title} className="group border-b border-primary/20 bg-white open:bg-white" open={index === 0}><summary className="flex cursor-pointer list-none items-center justify-between gap-5 px-5 py-5 font-extrabold text-[#092b4e]"><span>{item.title}</span><Plus className="h-5 w-5 shrink-0 text-primary transition group-open:rotate-45" /></summary><p className="px-5 pb-6 leading-7 text-zinc-600">{item.text}</p></details>)}</div>
+            <div className="mt-7 border-t border-zinc-200">{faqCopy[locale].items.map((item, index) => <details key={item.title} className="group border-b border-zinc-200 bg-white open:bg-zinc-50" open={index === 0}><summary className="flex cursor-pointer list-none items-center justify-between gap-5 px-5 py-5 font-extrabold text-zinc-900"><span>{item.title}</span><Plus className="h-5 w-5 shrink-0 text-primary transition group-open:rotate-45" /></summary><p className="px-5 pb-6 leading-7 text-zinc-600">{item.text}</p></details>)}</div>
             <Link href={href(locale, "faq")} className="button-outline mt-7">{dict.nav.faq}<ArrowRight className="h-4 w-4" /></Link>
           </div>
-          <div className="relative min-h-[480px] overflow-hidden bg-[#0d57a5] p-8"><Image src={IMAGES.homeMainz} alt={`${SITE.name} container depot in Mainz`} fill sizes="(max-width: 1024px) 100vw, 40vw" className="object-cover opacity-80" /><div className="absolute inset-0 bg-gradient-to-t from-[#052a4e] via-[#0d57a5]/20 to-[#0d57a5]/10" /><p className="relative max-w-xs text-sm font-extrabold uppercase tracking-[0.16em] text-[#ffb33e]">{SITE.name} · Mainz</p></div>
+          <div className="relative min-h-[440px] overflow-hidden bg-zinc-200 shadow-[0_18px_45px_rgba(0,0,0,0.10)]"><Image src={IMAGES.homeDelivery} alt={`${SITE.name} delivery`} fill sizes="(max-width: 1024px) 100vw, 40vw" className="object-cover" /><div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-7 pt-20"><p className="text-sm font-extrabold uppercase tracking-[0.16em] text-white">{SITE.name} · {dict.nav.delivery}</p></div></div>
         </div>
       </section>
 
-      <section className="overflow-hidden bg-[#052a4e] text-white">
-        <div className="container-shell grid lg:grid-cols-[minmax(360px,.85fr)_minmax(0,1.15fr)] lg:items-center">
-          <div className="relative min-h-[340px] lg:min-h-[470px]"><Image src={IMAGES.container40hc} alt={`${SITE.name} high-cube container`} fill sizes="(max-width: 1024px) 100vw, 45vw" className="object-cover opacity-75" /><div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#052a4e]" /></div>
-          <div className="py-14 lg:p-16 lg:pr-0">
-            <p className="eyebrow text-[#ffb33e]">{dict.nav.contact}</p><h2 className="text-3xl font-extrabold leading-tight sm:text-4xl lg:text-5xl">{dict.home.ctaTitle}</h2><p className="mt-5 max-w-2xl text-lg leading-8 text-blue-50/80">{dict.home.ctaText}</p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row"><Link href={href(locale, "quote")} className="button-primary">{dict.nav.quote}<ArrowRight className="h-4 w-4" /></Link><a href={`tel:${SITE.phoneHref}`} className="button-outline border-white/30 bg-white/5 text-white hover:bg-white hover:text-primary"><Phone className="h-4 w-4" />{SITE.phone}</a></div>
-            <a href={`mailto:${SITE.email}`} className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-blue-100 hover:text-[#ffb33e]"><Mail className="h-4 w-4" />{SITE.email}</a>
-          </div>
+      <section className="section-space bg-zinc-50">
+        <div className="container-shell text-center">
+          <p className="eyebrow">{dict.nav.contact}</p><h2 className="section-title mx-auto max-w-3xl">{dict.home.ctaTitle}</h2><p className="mx-auto mt-4 max-w-2xl leading-7 text-zinc-600">{dict.home.ctaText}</p>
+          <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row"><Link href={href(locale, "quote")} className="button-primary">{dict.nav.quote}<ArrowRight className="h-4 w-4" /></Link><a href={`tel:${SITE.phoneHref}`} className="button-outline"><Phone className="h-4 w-4" />{SITE.phone}</a></div>
+          <a href={`mailto:${SITE.email}`} className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-zinc-500 transition hover:text-primary"><Mail className="h-4 w-4" />{SITE.email}</a>
         </div>
       </section>
     </main>

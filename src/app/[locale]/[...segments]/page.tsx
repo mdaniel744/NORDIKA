@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import { CartPage } from "@/components/cart-page";
+import { AboutPage } from "@/components/about-page";
 import { CheckoutPage } from "@/components/checkout-page";
 import { CategoriesPage, CategoryPage } from "@/components/category-pages";
 import { CataloguePage } from "@/components/catalogue-page";
 import { ContactPage } from "@/components/contact-page";
+import { DeliveryPage } from "@/components/delivery-page";
 import { GuidePage, GuidesPage } from "@/components/guide-pages";
 import { getLegalCopy, LegalPage } from "@/components/legal-page";
 import { LocationPage, LocationsPage } from "@/components/locations-page";
@@ -132,6 +134,12 @@ export default async function LocalizedRoute({ params }: PageProps) {
   if (key === "checkout" && segments.length === 1) return <CheckoutPage locale={locale} />;
   if (key === "contact" && segments.length === 1) {
     const content = getSimplePage(locale, key); if (!content) notFound(); return <ContactPage locale={locale} content={content} />;
+  }
+  if (key === "about" && segments.length === 1) {
+    const content = getSimplePage(locale, key); if (!content) notFound(); return <AboutPage locale={locale} content={content} />;
+  }
+  if (key === "delivery" && segments.length === 1) {
+    const content = getSimplePage(locale, key); if (!content) notFound(); return <DeliveryPage locale={locale} content={content} />;
   }
   if (key === "locations" && segments.length === 1) {
     const content = getSimplePage(locale, key); if (!content) notFound(); return <LocationsPage locale={locale} content={content} />;

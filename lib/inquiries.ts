@@ -10,6 +10,7 @@ export async function saveInquiry(row: {
   message: string;
   details: Record<string, unknown>;
 }): Promise<void> {
+  if (!STORE_ID || !supabase) throw new Error("Supabase inquiry storage is not configured");
   // Insert-only: the anon key has no SELECT grant on this table, so chaining
   // .select() after insert would fail under RLS even though the write itself succeeds.
   const { error } = await supabase.from("inquiries").insert({

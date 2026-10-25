@@ -50,7 +50,7 @@ function mapProduct(row: SupabaseProductRow): Product {
 }
 
 export async function getProducts(): Promise<Product[]> {
-  if (!STORE_ID) return [];
+  if (!STORE_ID || !supabase) return [];
   try {
     const { data, error } = await supabase
       .from("products")

@@ -9,6 +9,15 @@ import { SITE } from "@/lib/site";
 
 export function StaticPage({ locale, routeKey, content }: { locale: Locale; routeKey: RouteKey; content: PageContent }) {
   const dict = getDictionary(locale);
+  const exploreTitle: Record<Locale, string> = { de: "Weiter entdecken", en: "Continue exploring", nl: "Verder ontdekken", it: "Continua a esplorare", cs: "Pokračujte v průzkumu", es: "Seguir explorando" };
+  const exploreLinks = [
+    { key: "shop" as const, label: dict.nav.shop },
+    { key: "types" as const, label: dict.nav.types },
+    { key: "guides" as const, label: dict.nav.guides },
+    { key: "delivery" as const, label: dict.nav.delivery },
+    { key: "faq" as const, label: dict.nav.faq },
+    { key: "contact" as const, label: dict.nav.contact },
+  ].filter((item) => item.key !== routeKey).slice(0, 4);
   return (
     <main>
       <Breadcrumbs locale={locale} items={[{ label: content.title }]} />
@@ -21,6 +30,9 @@ export function StaticPage({ locale, routeKey, content }: { locale: Locale; rout
           <aside className="h-fit bg-zinc-100 p-7 lg:sticky lg:top-32"><p className="eyebrow">{SITE.name}</p><h2 className="text-2xl font-extrabold">{dict.home.ctaTitle}</h2><p className="mt-3 text-sm text-zinc-600">{dict.home.ctaText}</p><Link href={href(locale, "quote")} className="button-primary mt-6 w-full">{dict.nav.quote}<ArrowRight className="h-4 w-4" /></Link>{routeKey !== "contact" && <Link href={href(locale, "contact")} className="button-outline mt-3 w-full">{dict.nav.contact}</Link>}</aside>
         </div>
       </section>
+      <nav aria-label={exploreTitle[locale]} className="border-t border-zinc-200 bg-zinc-50 py-10">
+        <div className="container-shell"><h2 className="text-2xl font-extrabold">{exploreTitle[locale]}</h2><div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{exploreLinks.map((item) => <Link key={item.key} href={href(locale, item.key)} className="group flex items-center justify-between gap-4 bg-white p-5 font-bold text-[#092b4e] shadow-[0_8px_24px_rgba(0,0,0,0.05)] transition hover:bg-primary hover:text-white">{item.label}<ArrowRight className="h-4 w-4 shrink-0 transition group-hover:translate-x-1" /></Link>)}</div></div>
+      </nav>
     </main>
   );
 }

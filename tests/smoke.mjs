@@ -23,11 +23,14 @@ for (const locale of locales) {
   await checkPage(`/${locale}`, locale);
   const shopHtml = await checkPage(`/${locale}/${shops[locale]}`, locale);
   const productPath = shopHtml.match(new RegExp(`href="(/${locale}/(?:container|contenedor|kontejner)/[^"]+)"`))?.[1];
-  assert.ok(productPath, `${locale} shop has no product link`);
-  const productHtml = await checkPage(productPath, locale);
-  assert.match(productHtml, /"@type":"Product"/, `${productPath} lacks Product JSON-LD`);
-  assert.match(productHtml, /(?:In den Warenkorb|Add to cart|In winkelwagen|Aggiungi al carrello|Přidat do košíku|Añadir al carrito)/i, `${productPath} lacks add-to-cart control`);
-  assert.doesNotMatch(productHtml, /(?:Direkt zur Kasse|Buy now|Nu kopen|Acquista ora|Koupit nyní|Comprar ahora)/i, `${productPath} still contains buy-now control`);
+  if (productPath) {
+    const productHtml = await checkPage(productPath, locale);
+    assert.match(productHtml, /"@type":"Product"/, `${productPath} lacks Product JSON-LD`);
+    assert.match(productHtml, /(?:In den Warenkorb|Add to cart|In winkelwagen|Aggiungi al carrello|Přidat do košíku|Añadir al carrito)/i, `${productPath} lacks add-to-cart control`);
+    assert.doesNotMatch(productHtml, /(?:Direkt zur Kasse|Buy now|Nu kopen|Acquista ora|Koupit nyní|Comprar ahora)/i, `${productPath} still contains buy-now control`);
+  } else {
+    assert.match(shopHtml, /(?:Keine passenden Container gefunden|No matching containers found|Geen passende containers gevonden|Nessun container corrispondente|Nebyly nalezeny odpovídající kontejnery|No hay contenedores coincidentes)/i, `${locale} shop does not show its empty-catalogue state`);
+  }
   const checkoutHtml = await checkPage(`/${locale}/${checkouts[locale]}`, locale);
   assert.match(checkoutHtml, /noindex/i, `${locale} checkout should not be indexed`);
 }
@@ -68,11 +71,22 @@ const imprintHtml = await checkPage("/de/impressum", "de");
 for (const value of ["NORDIKA Container GmbH", "Amtsgericht Hamburg", "HRB 147066", "Amtsgericht Pinneberg", "HRB 12002 PI", "DEK1101R.HRB147066", "DE 300860969", "Nikolaus-Otto-Str. 9", "info@nordikacontainer.com"]) assert.match(imprintHtml, new RegExp(value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"), `imprint lacks ${value}`);
 const addressHtml = await checkPage("/de/standorte", "de");
 assert.match(addressHtml, /Nikolaus-Otto-Str\. 9/, "address page lacks the Mainz address");
+const aboutHtml = await checkPage("/en/about", "en");
+assert.match(aboutHtml, /specialis(?:es|ing) in (?:selling|the sale of).*shipping containers/i, "about page lacks the shipping-container sales focus");
+assert.match(aboutHtml, /main base in Mainz/i, "about page lacks the Mainz main-base statement");
+const aboutPrimaryNavigation = aboutHtml.match(/<nav aria-label="Primary navigation"[\s\S]*?<\/nav>/)?.[0] || "";
+assert.doesNotMatch(aboutPrimaryNavigation, />Guides<|>About us</, "primary navigation still contains Guides or About us");
 
 const shippingHtml = await checkPage("/de/lieferung-aufstellung", "de");
-for (const value of ["GERMANY_HANDLING_DAYS", "GERMANY_TRANSIT_DAYS", "EU_HANDLING_DAYS", "EU_TRANSIT_DAYS", "Versand- und Lieferbedingungen", "individuell berechnet", "Portugal"]) assert.match(shippingHtml, new RegExp(value, "i"), `shipping policy lacks ${value}`);
+assert.match(shippingHtml, /Praxisbeispiele/, "delivery page lacks practical delivery examples");
+assert.match(shippingHtml, /Standort vorbereiten/, "delivery page lacks site-preparation guidance");
+assert.match(shippingHtml, /container-groessen-abmessungen/, "delivery page lacks size-guide internal link");
+assert.match(shippingHtml, /container-aufstellort-vorbereiten/, "delivery page lacks site-guide internal link");
+for (const value of ["Versand- und Lieferbedingungen", "individuell berechnet", "Portugal", "Lieferzeitraum", "vor Vertragsschluss"]) assert.match(shippingHtml, new RegExp(value, "i"), `shipping policy lacks ${value}`);
+assert.doesNotMatch(shippingHtml, /(?:GERMANY|EU)_(?:HANDLING|TRANSIT|TOTAL)_DELIVERY_DAYS|Konfigurationsplatzhalter|Vor Veröffentlichung/i, "shipping policy exposes internal placeholders");
 const returnsHtml = await checkPage("/de/rueckgabe-erstattung", "de");
 for (const value of ["kein allgemeines freiwilliges Rückgaberecht", "14 Tagen", "eigenen Rücktransport", "Gebrauchte Container"]) assert.match(returnsHtml, new RegExp(value, "i"), `return policy lacks ${value}`);
+for (const value of ["Fragen zu dieser Information", "Auf dieser Seite", "Kontakt aufnehmen"]) assert.match(returnsHtml, new RegExp(value, "i"), `refined policy layout lacks ${value}`);
 const withdrawalHtml = await checkPage("/de/widerrufsrecht", "de");
 assert.match(withdrawalHtml, /binnen 14 Tagen/i, "withdrawal policy lacks the statutory period");
 assert.match(withdrawalHtml, /kundenspezifisch/i, "withdrawal policy lacks the custom-goods qualification");
@@ -82,6 +96,14 @@ assert.match(termsHtml, /kein allgemeines freiwilliges Rückgaberecht/i, "terms 
 const paymentHtml = await checkPage("/de/zahlungsarten", "de");
 assert.match(paymentHtml, /SEPA-Zahlungsanforderung/i, "payment page does not describe the checkout workflow");
 assert.match(paymentHtml, /innergemeinschaftlichen Lieferung/i, "payment page lacks intra-EU business VAT treatment");
+const privacyHtml = await checkPage("/de/datenschutz", "de");
+for (const value of ["Art. 6 Abs. 1", "Serverdaten", "Datenschutzrechte", "Automatisierte Entscheidungen"]) assert.match(privacyHtml, new RegExp(value, "i"), `privacy policy lacks ${value}`);
+const cookiesHtml = await checkPage("/de/cookie-richtlinie", "de");
+assert.match(cookiesHtml, /§ 25 Abs\. 2 TDDDG/i, "cookie policy lacks the storage legal basis");
+assert.match(cookiesHtml, /keine Analyse-, Profiling- oder Werbetracker/i, "cookie policy does not describe the current tracker-free setup");
+assert.match(imprintHtml, /§ 5 DDG/i, "imprint uses no current provider-information reference");
+const germanPolicyHtml = [imprintHtml, returnsHtml, withdrawalHtml, termsHtml, paymentHtml, privacyHtml, cookiesHtml].join("\n");
+assert.doesNotMatch(germanPolicyHtml, /(?:Zuletzt aktualisiert|Veröffentlicht(?: am)?|Stand\s*:)/i, "policy pages expose a publication or update date");
 
 await checkPage("/en/request-quote", "en");
 const quoteSource = await readFile(new URL("../components/quote-wizard.tsx", import.meta.url), "utf8");

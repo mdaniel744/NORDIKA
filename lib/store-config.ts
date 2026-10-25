@@ -3,7 +3,7 @@ import { STORE_ID, supabase } from "@/lib/supabase";
 import { SITE } from "@/lib/site";
 
 export async function getEnabledLocales(): Promise<Locale[]> {
-  if (!STORE_ID) return [...locales];
+  if (!STORE_ID || !supabase) return [...locales];
   try {
     const { data, error } = await supabase.from("stores").select("enabled_locales").eq("id", STORE_ID).single();
     if (error) throw error;

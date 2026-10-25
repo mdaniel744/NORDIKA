@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, FileText, Mail, Phone } from "lucide-react";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { PageHero } from "@/components/page-hero";
 import type { Locale } from "@/lib/i18n";
@@ -20,13 +20,15 @@ const titles: Record<Locale, Record<LegalKey, string>> = {
   es: { imprint: "Aviso legal", privacy: "Política de privacidad", terms: "Términos y condiciones", withdrawal: "Derecho de desistimiento", withdrawalForm: "Formulario modelo de desistimiento", returns: "Devoluciones y reembolsos", payments: "Métodos de pago", cookies: "Política de cookies", complaints: "Reclamaciones", warranty: "Garantía y defectos", accessibility: "Accesibilidad" },
 };
 
-const ui: Record<Locale, { eyebrow: string; intro: string; provider: string; contact: string; coverage: string; related: string; contract: string }> = {
-  de: { eyebrow: "Service und Recht", intro: "Transparente Informationen zu Anbieter, Datenverarbeitung und Vertragsabwicklung bei NORDIKA Container.", provider: "Anbieter", contact: "Kontakt und verbindliche Unterlagen", coverage: "Was diese Information abdeckt", related: "Weitere Informationen", contract: "Die verbindlichen Angaben im konkreten Angebot, in der Auftragsbestätigung und in den vor Vertragsschluss bereitgestellten Unterlagen gehen dieser allgemeinen Übersicht vor." },
-  en: { eyebrow: "Service and legal", intro: "Clear information about the provider, data processing and contract handling at NORDIKA Container.", provider: "Provider", contact: "Contact and binding documents", coverage: "What this information covers", related: "Related information", contract: "The binding information in the specific offer, order confirmation and documents supplied before the contract takes precedence over this general overview." },
-  nl: { eyebrow: "Service en juridisch", intro: "Duidelijke informatie over de aanbieder, gegevensverwerking en contractafhandeling bij NORDIKA Container.", provider: "Aanbieder", contact: "Contact en bindende documenten", coverage: "Wat deze informatie omvat", related: "Meer informatie", contract: "De bindende informatie in de concrete offerte, orderbevestiging en vóór de overeenkomst verstrekte documenten gaat voor op dit algemene overzicht." },
-  it: { eyebrow: "Servizio e aspetti legali", intro: "Informazioni chiare sul fornitore, il trattamento dei dati e la gestione dei contratti di NORDIKA Container.", provider: "Fornitore", contact: "Contatti e documenti vincolanti", coverage: "Cosa comprende questa informazione", related: "Altre informazioni", contract: "Prevalgono le informazioni vincolanti contenute nell'offerta specifica, nella conferma d'ordine e nei documenti forniti prima del contratto." },
-  cs: { eyebrow: "Servis a právní informace", intro: "Jasné informace o poskytovateli, zpracování údajů a smluvním procesu společnosti NORDIKA Container.", provider: "Poskytovatel", contact: "Kontakt a závazné dokumenty", coverage: "Co tato informace zahrnuje", related: "Související informace", contract: "Závazné údaje v konkrétní nabídce, potvrzení objednávky a dokumentech poskytnutých před smlouvou mají přednost před tímto přehledem." },
-  es: { eyebrow: "Servicio e información legal", intro: "Información clara sobre el proveedor, el tratamiento de datos y la gestión contractual de NORDIKA Container.", provider: "Proveedor", contact: "Contacto y documentos vinculantes", coverage: "Qué cubre esta información", related: "Información relacionada", contract: "Prevalece la información vinculante de la oferta concreta, la confirmación de pedido y los documentos facilitados antes del contrato." },
+type LegalUi = { eyebrow: string; intro: string; provider: string; contact: string; coverage: string; related: string; contract: string; contents: string; helpTitle: string; helpText: string; contactPage: string };
+
+const ui: Record<Locale, LegalUi> = {
+  de: { eyebrow: "Service und Recht", intro: "Transparente Informationen zu Anbieter, Datenverarbeitung und Vertragsabwicklung bei NORDIKA Container.", provider: "Angaben gemäß § 5 DDG", contact: "Kontakt und verbindliche Unterlagen", coverage: "Was diese Information abdeckt", related: "Weitere Informationen", contract: "Die verbindlichen Angaben im konkreten Angebot, in der Auftragsbestätigung und in den vor Vertragsschluss bereitgestellten Unterlagen gehen dieser allgemeinen Übersicht vor.", contents: "Auf dieser Seite", helpTitle: "Fragen zu dieser Information?", helpText: "Wir erläutern Ihnen den Ablauf für Ihren konkreten Container, Lieferort oder Auftrag persönlich.", contactPage: "Kontakt aufnehmen" },
+  en: { eyebrow: "Service and legal", intro: "Clear information about the provider, data processing and contract handling at NORDIKA Container.", provider: "Provider information", contact: "Contact and binding documents", coverage: "What this information covers", related: "Related information", contract: "The binding information in the specific offer, order confirmation and documents supplied before the contract takes precedence over this general overview.", contents: "On this page", helpTitle: "Questions about this information?", helpText: "We can explain how it applies to your container, delivery location or order.", contactPage: "Contact us" },
+  nl: { eyebrow: "Service en juridisch", intro: "Duidelijke informatie over de aanbieder, gegevensverwerking en contractafhandeling bij NORDIKA Container.", provider: "Aanbieder", contact: "Contact en bindende documenten", coverage: "Wat deze informatie omvat", related: "Meer informatie", contract: "De bindende informatie in de concrete offerte, orderbevestiging en vóór de overeenkomst verstrekte documenten gaat voor op dit algemene overzicht.", contents: "Op deze pagina", helpTitle: "Vragen over deze informatie?", helpText: "Wij leggen graag uit wat dit betekent voor uw container, afleverlocatie of bestelling.", contactPage: "Contact opnemen" },
+  it: { eyebrow: "Servizio e aspetti legali", intro: "Informazioni chiare sul fornitore, il trattamento dei dati e la gestione dei contratti di NORDIKA Container.", provider: "Fornitore", contact: "Contatti e documenti vincolanti", coverage: "Cosa comprende questa informazione", related: "Altre informazioni", contract: "Prevalgono le informazioni vincolanti contenute nell'offerta specifica, nella conferma d'ordine e nei documenti forniti prima del contratto.", contents: "In questa pagina", helpTitle: "Domande su queste informazioni?", helpText: "Possiamo spiegare come si applicano al container, al luogo di consegna o all'ordine.", contactPage: "Contattaci" },
+  cs: { eyebrow: "Servis a právní informace", intro: "Jasné informace o poskytovateli, zpracování údajů a smluvním procesu společnosti NORDIKA Container.", provider: "Poskytovatel", contact: "Kontakt a závazné dokumenty", coverage: "Co tato informace zahrnuje", related: "Související informace", contract: "Závazné údaje v konkrétní nabídce, potvrzení objednávky a dokumentech poskytnutých před smlouvou mají přednost před tímto přehledem.", contents: "Na této stránce", helpTitle: "Máte k těmto informacím dotaz?", helpText: "Vysvětlíme, jak se vztahují na váš kontejner, místo dodání nebo objednávku.", contactPage: "Kontaktujte nás" },
+  es: { eyebrow: "Servicio e información legal", intro: "Información clara sobre el proveedor, el tratamiento de datos y la gestión contractual de NORDIKA Container.", provider: "Proveedor", contact: "Contacto y documentos vinculantes", coverage: "Qué cubre esta información", related: "Información relacionada", contract: "Prevalece la información vinculante de la oferta concreta, la confirmación de pedido y los documentos facilitados antes del contrato.", contents: "En esta página", helpTitle: "¿Dudas sobre esta información?", helpText: "Podemos explicar cómo se aplica a su contenedor, lugar de entrega o pedido.", contactPage: "Contactar" },
 };
 
 const registerTitle: Record<Locale, string> = { de: "Registerangaben", en: "Register details", nl: "Registergegevens", it: "Dati del registro", cs: "Registrační údaje", es: "Datos registrales" };
@@ -96,6 +98,15 @@ const related: Record<LegalKey, LegalKey[]> = {
 };
 
 const germanDetailedPolicies: Partial<Record<PolicyKey, LegalSection[]>> = {
+  privacy: [
+    { title: "1. Verantwortlicher", paragraphs: [`Verantwortlich für die Verarbeitung personenbezogener Daten auf dieser Website ist:\n\n${SITE.legalName}\n${SITE.address.street}\n${SITE.address.postalCode} ${SITE.address.city}\nDeutschland\n\nE-Mail: ${SITE.email}\nTelefon: ${SITE.phone}`] },
+    { title: "2. Bereitstellung der Website und Serverdaten", paragraphs: ["Beim Aufruf der Website können technisch erforderliche Verbindungs- und Protokolldaten verarbeitet werden, insbesondere IP-Adresse, Zeitpunkt, angeforderte Ressource, übertragene Datenmenge, Statuscode, Referrer sowie Browser- und Geräteinformationen. Die Verarbeitung dient der sicheren, stabilen und fehlerfreien Bereitstellung der Website.", "Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO. Unser berechtigtes Interesse liegt im sicheren Betrieb, in der Fehleranalyse und im Schutz vor Missbrauch. Protokolldaten werden nur so lange gespeichert, wie dies für diese Zwecke oder zur Aufklärung eines Sicherheitsvorfalls erforderlich ist, sofern keine längere gesetzliche Pflicht besteht."] },
+    { title: "3. Anfragen, Angebote und Bestellungen", paragraphs: ["Wenn Sie ein Kontakt-, Angebots-, Warenkorb- oder Bestellformular nutzen, verarbeiten wir die von Ihnen mitgeteilten Kontakt-, Adress-, Unternehmens-, Liefer- und Auftragsdaten sowie den Inhalt Ihrer Nachricht. Pflichtangaben sind erforderlich, um Ihre Anfrage zu bearbeiten, Liefermöglichkeiten zu prüfen oder einen Vertrag vorzubereiten und durchzuführen.", "Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO für vorvertragliche Maßnahmen und die Vertragsabwicklung. Soweit handels- oder steuerrechtliche Pflichten bestehen, verarbeiten wir Daten auf Grundlage von Art. 6 Abs. 1 lit. c DSGVO. Zur Abwehr oder Durchsetzung von Ansprüchen kann Art. 6 Abs. 1 lit. f DSGVO einschlägig sein."] },
+    { title: "4. Empfänger und Auftragsverarbeiter", paragraphs: ["Daten erhalten innerhalb von NORDIKA Container nur die Stellen, die sie für Anfrage, Angebot, Auftrag, Buchhaltung oder Kundenservice benötigen. Soweit für den jeweiligen Auftrag erforderlich, können Hosting- und IT-Dienstleister, Transport- und Kranunternehmen, Zahlungs- oder Buchhaltungsdienstleister, Berater und Behörden Daten erhalten.", "Dienstleister erhalten nur die erforderlichen Angaben und werden – soweit gesetzlich vorgeschrieben – vertraglich als Auftragsverarbeiter gebunden. Eine Übermittlung außerhalb des Europäischen Wirtschaftsraums erfolgt nur, wenn sie tatsächlich erforderlich ist und die gesetzlichen Voraussetzungen einschließlich geeigneter Garantien erfüllt sind."] },
+    { title: "5. Speicherdauer", paragraphs: ["Wir speichern personenbezogene Daten nur so lange, wie es für den jeweiligen Zweck erforderlich ist. Danach werden sie gelöscht oder gesperrt, sofern gesetzliche Aufbewahrungspflichten, insbesondere aus Handels- und Steuerrecht, oder die Sicherung und Durchsetzung von Rechtsansprüchen eine weitere Aufbewahrung verlangen.", "Nicht zu einem Vertrag führende Anfragen werden gelöscht, sobald die Bearbeitung abgeschlossen ist und keine gesetzlichen oder berechtigten Gründe für eine weitere Speicherung bestehen."] },
+    { title: "6. Ihre Datenschutzrechte", paragraphs: ["Nach Maßgabe der DSGVO können Sie Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch verlangen. Beruht eine Verarbeitung auf einer Einwilligung, können Sie diese mit Wirkung für die Zukunft widerrufen. Außerdem können Sie sich bei einer zuständigen Datenschutzaufsichtsbehörde beschweren."], bullets: [`Anfragen zu Ihren Daten: ${SITE.email}`, "Zur Zuordnung können wir einen geeigneten Identitätsnachweis anfordern", "Gesetzliche Aufbewahrungspflichten können einer sofortigen Löschung entgegenstehen"] },
+    { title: "7. Automatisierte Entscheidungen und Sicherheit", paragraphs: ["Wir treffen über diese Website keine ausschließlich automatisierten Entscheidungen mit rechtlicher oder vergleichbar erheblicher Wirkung. Wir setzen angemessene technische und organisatorische Maßnahmen ein, um personenbezogene Daten vor Verlust, Missbrauch und unberechtigtem Zugriff zu schützen."] },
+  ],
   terms: [
     { title: "1. Geltungsbereich und Kundenkreis", paragraphs: ["Diese Allgemeinen Geschäftsbedingungen gelten für Verträge über Container, Zubehör, Umbauten sowie vereinbarte Transport- und Aufstellleistungen. NORDIKA Container beliefert Unternehmen, öffentliche Auftraggeber und private Verbraucher.", "Zwingende gesetzliche Rechte von Verbrauchern bleiben unberührt. Besondere Vereinbarungen im konkreten Angebot oder in der Auftragsbestätigung gehen diesen allgemeinen Hinweisen vor."] },
     { title: "2. Angebot, Bestellung und Vertragsschluss", paragraphs: ["Katalog, Produktseite und Warenkorb stellen noch kein bindendes Lieferangebot dar. Der Warenkorb dient als unverbindliche Zusammenstellung. Verfügbarkeit, konkrete Ausführung, Lieferort, Entladung, Gesamtpreis und Lieferzeit werden in einem individuellen Angebot beziehungsweise einer Auftragsbestätigung festgehalten.", "Ein Vertrag kommt nach dem im konkreten Angebot beschriebenen Verfahren zustande. Änderungen und Nebenleistungen sind nur geschuldet, wenn sie bestätigt wurden."] },
@@ -110,6 +121,11 @@ const germanDetailedPolicies: Partial<Record<PolicyKey, LegalSection[]>> = {
     { title: "Folgen des Widerrufs", paragraphs: ["Bei einem wirksamen Widerruf werden die empfangenen Zahlungen einschließlich der Kosten der günstigsten angebotenen Standardlieferung nach den gesetzlichen Vorgaben spätestens binnen 14 Tagen ab Eingang des Widerrufs zurückgezahlt. Zusätzliche Kosten einer teureren, vom Verbraucher gewählten Lieferart werden nicht erstattet.", "Die Rückzahlung kann nach den gesetzlichen Voraussetzungen zurückgehalten werden, bis die Ware zurückerhalten wurde oder der Verbraucher den Nachweis der Rücksendung erbracht hat; dies gilt nicht, wenn NORDIKA Container die Abholung angeboten hat. Die Rückzahlung erfolgt grundsätzlich mit demselben Zahlungsmittel, sofern nichts anderes kostenfrei vereinbart wurde."] },
     { title: "Rücktransport von Containern", paragraphs: ["Container können wegen Größe und Gewicht nicht mit gewöhnlichen Paketdiensten zurückgesandt werden. Veranlassen Sie keinen eigenständigen Transport. NORDIKA Container koordiniert Abholung beziehungsweise Schwerlast-Rücktransport.", "Der Verbraucher trägt die unmittelbaren Rücksendekosten bei einem Widerruf nur, wenn er vor Vertragsschluss ordnungsgemäß darüber informiert wurde und NORDIKA Container die Kosten nicht übernommen hat. Die konkrete beziehungsweise gesetzlich erforderliche Kostenschätzung muss in den vor Vertragsschluss bereitgestellten Unterlagen für den jeweiligen Container und Lieferort ausgewiesen werden."] },
     { title: "Ausnahmen", paragraphs: ["Das Widerrufsrecht kann insbesondere bei Waren ausgeschlossen sein, die nicht vorgefertigt sind und für deren Herstellung eine individuelle Auswahl des Verbrauchers maßgeblich ist oder die eindeutig auf persönliche Bedürfnisse zugeschnitten sind. Das gilt nicht pauschal für jeden Container. Entscheidend sind der konkrete Vertrag und die tatsächlich vereinbarte Individualisierung.", "Unternehmern steht das gesetzliche Verbraucherwiderrufsrecht nicht zu. Gesetzliche Mängelrechte sind vom Widerrufsrecht unabhängig und bleiben unberührt."] },
+  ],
+  withdrawalForm: [
+    { title: "Hinweise zur Verwendung", paragraphs: ["Wenn Sie als Verbraucher einen anwendbaren Vertrag widerrufen möchten, können Sie dieses Muster verwenden. Die Nutzung ist nicht vorgeschrieben; jede andere eindeutige Widerrufserklärung genügt. Senden Sie die Erklärung innerhalb der Widerrufsfrist per E-Mail oder Post an NORDIKA Container.", `Empfänger:\n${SITE.legalName}\n${SITE.address.street}\n${SITE.address.postalCode} ${SITE.address.city}\nDeutschland\nE-Mail: ${SITE.email}`] },
+    { title: "Muster-Widerrufsformular", paragraphs: ["Hiermit widerrufe(n) ich/wir (*) den von mir/uns (*) abgeschlossenen Vertrag über den Kauf der folgenden Waren beziehungsweise die Erbringung der folgenden Dienstleistung:\n\n____________________________________________\n\nBestellt am (*) / erhalten am (*): ____________________\n\nAuftrags- oder Rechnungsnummer: ____________________\n\nName des/der Verbraucher(s): ____________________\n\nAnschrift des/der Verbraucher(s):\n____________________________________________\n____________________________________________\n\nDatum: ____________________\n\nUnterschrift des/der Verbraucher(s) (nur bei Mitteilung auf Papier):\n____________________________________________\n\n(*) Unzutreffendes streichen."] },
+    { title: "Rücktransport separat abstimmen", paragraphs: ["Das Absenden des Widerrufsformulars organisiert noch keinen Rücktransport. Container können nicht mit einem gewöhnlichen Paketdienst zurückgesandt werden. Stimmen Sie Abholung, Schwerlasttransport, Termin und Kosten deshalb mit NORDIKA Container ab und veranlassen Sie keinen eigenständigen Rücktransport."] },
   ],
   returns: [
     { title: "Kein allgemeines freiwilliges Rückgaberecht", paragraphs: ["Über die gesetzlichen Rechte hinaus bieten wir aufgrund der Größe, des Gewichts und des erforderlichen Spezialtransports der Container kein allgemeines freiwilliges Rückgaberecht für nicht mangelhafte Ware an.", "Eine freiwillige Rücknahme kann ausnahmsweise ausdrücklich schriftlich vereinbart werden. Vorher werden Transportorganisation, Kosten, mögliche Erstattung der ursprünglichen Lieferung und weitere vereinbarte Abzüge transparent festgehalten. Gesetzliche Verbraucher-, Widerrufs- und Mängelrechte werden dadurch nicht eingeschränkt."] },
@@ -127,6 +143,31 @@ const germanDetailedPolicies: Partial<Record<PolicyKey, LegalSection[]>> = {
     { title: "Gesamtpreis vor Vertragsschluss", paragraphs: ["Als Bruttopreis gekennzeichnete Produktpreise enthalten die deutsche Umsatzsteuer. Bei einer innergemeinschaftlichen Lieferung an ein Unternehmen in einem anderen EU-Mitgliedstaat wird der Nettowarenwert mit 0 % Umsatzsteuer ausgewiesen, sobald eine gültige EU-USt-IdNr. und die grenzüberschreitende Beförderung erfolgreich geprüft wurden. Individuelle Transportkosten, Entladung, Kran, Aufstellung, Zubehör und Umbauten werden gesondert ausgewiesen, soweit sie nicht ausdrücklich im Produktpreis enthalten sind. Der bestätigte Gesamtpreis ist vor Vertragsschluss ersichtlich."] },
     { title: "Zahlungsprüfung", paragraphs: ["Bitte gleichen Sie Empfänger, Rechnung, Auftragsnummer, Betrag und Verwendungszweck ab. Unerwartete Änderungen von Bankdaten sollten Sie vor Zahlung über die bekannten Kontaktdaten von NORDIKA Container verifizieren. Bewahren Sie den Zahlungsbeleg für Rückfragen auf."] },
     { title: "Erstattungen", paragraphs: ["Erstattungen bei Widerruf, berechtigten Mängeln oder ausdrücklich vereinbarten Rücknahmen richten sich nach der jeweiligen Rechtsgrundlage und den schriftlichen Vertragsunterlagen. Die Rückgabe- und Erstattungsrichtlinie sowie die Widerrufsbelehrung erläutern die jeweiligen Abläufe."] },
+  ],
+  cookies: [
+    { title: "1. Technisch erforderliche Speicherung", paragraphs: ["Diese Website verwendet Browser-Speicher, soweit dies für ausdrücklich gewünschte Funktionen erforderlich ist. Dazu gehört insbesondere die lokale Speicherung des Warenkorbs, damit ausgewählte Container beim Wechsel zwischen Seiten erhalten bleiben. Das Löschen oder Blockieren des Browser-Speichers kann dazu führen, dass der Warenkorb zurückgesetzt wird.", "Für das Speichern oder Auslesen technisch unbedingt erforderlicher Informationen gilt § 25 Abs. 2 TDDDG. Die anschließende Verarbeitung personenbezogener Daten erfolgt – je nach Funktion – zur Vertragsvorbereitung nach Art. 6 Abs. 1 lit. b DSGVO oder aufgrund unseres berechtigten Interesses an einer sicheren und nutzbaren Website nach Art. 6 Abs. 1 lit. f DSGVO."] },
+    { title: "2. Keine Analyse- oder Werbetracker", paragraphs: ["Derzeit setzt die Website keine Analyse-, Profiling- oder Werbetracker ein. Es werden daher über diese Website keine optionalen Marketing-Cookies für personalisierte Werbung gesetzt.", "Sollten künftig optionale Technologien hinzukommen, werden sie erst nach der erforderlichen Einwilligung aktiviert. Sie erhalten dann vorab verständliche Informationen zu Anbieter, Zweck, Speicherdauer und Widerrufsmöglichkeit."] },
+    { title: "3. Einstellungen im Browser", paragraphs: ["Sie können gespeicherte Website-Daten über die Einstellungen Ihres Browsers anzeigen und löschen. Nach dem Löschen müssen Spracheinstellungen oder Warenkorbinhalte gegebenenfalls erneut ausgewählt werden. Notwendige Speicherungen werden beim erneuten Verwenden der jeweiligen Funktion wieder angelegt."] },
+    { title: "4. Datenschutz", paragraphs: ["Weitere Informationen zu Serverprotokollen, Kontakt- und Bestelldaten, Empfängern, Speicherdauer und Ihren Rechten finden Sie in der Datenschutzerklärung."] },
+  ],
+  complaints: [
+    { title: "1. Schnell und vollständig melden", paragraphs: ["Melden Sie eine Abweichung oder Beschädigung möglichst früh per E-Mail oder über das Kontaktformular. Nennen Sie Auftrags- oder Rechnungsnummer, Container beziehungsweise Artikel, Lieferdatum, Zeitpunkt der Feststellung und eine genaue Beschreibung."], bullets: ["Übersichtsfotos des gesamten Containers", "Detailfotos des beanstandeten Bereichs", "Fotos von Türen, Verriegelungen, Boden oder Typenschild, soweit betroffen", "Lieferschein und Hinweise des Fahrers, soweit vorhanden"] },
+    { title: "2. Sichtbare Schäden bei Lieferung", paragraphs: ["Prüfen Sie den Container während der Übergabe und Entladung, soweit dies sicher möglich ist. Teilen Sie sichtbare Transport- oder Entladeschäden dem Fahrer mit und lassen Sie sie nach Möglichkeit auf den Lieferunterlagen vermerken. Das Unterlassen einer solchen Mitteilung nimmt Verbrauchern nicht automatisch ihre gesetzlichen Mängelrechte."] },
+    { title: "3. Verdeckte Mängel", paragraphs: ["Ein später erkennbarer Mangel soll nach Entdeckung zeitnah dokumentiert und gemeldet werden. Bei einem beiderseitigen Handelsgeschäft gelten für Unternehmer die Untersuchungs- und Rügepflichten des § 377 HGB, soweit anwendbar."] },
+    { title: "4. Prüfung und Lösung", paragraphs: ["Wir bestätigen den Eingang, prüfen Produktbeschreibung, vereinbarte Zustandsklasse, Übergabedokumente und Nachweise und stimmen die weitere Prüfung ab. Bei einer berechtigten Beanstandung richten sich Nachbesserung, Ersatzlieferung, Minderung, Rücktritt, Erstattung und notwendige Transportkosten nach den gesetzlichen Voraussetzungen und dem Vertrag.", "Beauftragen Sie ohne Abstimmung keine Reparatur, Veränderung, Verbringung oder Rücksendung des Containers, soweit keine sofortige Maßnahme zur Schadensminderung erforderlich ist. Das erleichtert eine sichere Begutachtung und die Organisation der Schwerlastlogistik."] },
+  ],
+  warranty: [
+    { title: "1. Gesetzliche Mängelrechte", paragraphs: ["Für Sach- und Rechtsmängel gelten die gesetzlichen Mängelrechte, soweit im konkreten Vertrag keine wirksame und zulässige Vereinbarung getroffen wurde. Eine freiwillige Garantie besteht nur, wenn sie für das konkrete Produkt ausdrücklich und mit eigenen Garantiebedingungen zugesagt wird. Sie ist von der gesetzlichen Gewährleistung zu unterscheiden."] },
+    { title: "2. Vereinbarte Beschaffenheit und Zustandsklasse", paragraphs: ["Entscheidend sind Produktbeschreibung, Zustandsklasse, Fotos, technische Angaben und die schriftliche Vereinbarung. Bei gebrauchten Containern können Dellen, Kratzer, Lackabrieb, Reparaturstellen, Oberflächenkorrosion und frühere Transportmarkierungen dem vereinbarten Zustand entsprechen und sind dann nicht allein wegen ihres Vorhandenseins ein Mangel.", "Auch bei gebrauchten Containern muss die ausdrücklich zugesagte Beschaffenheit vorliegen. Angaben wie WWT, Cargo Worthy, CSC oder IICL werden nur in dem beim konkreten Produkt vereinbarten Umfang geschuldet."] },
+    { title: "3. Keine Mängel durch ungeeigneten Standort oder Nutzung", paragraphs: ["Probleme, die erst durch ungeeigneten oder nicht tragfähigen Untergrund, fehlende Entwässerung, nicht vereinbarte Veränderungen, unsachgemäße Nutzung, unterlassene Wartung oder gewöhnlichen Verschleiß entstehen, sind nicht automatisch dem gelieferten Container zuzurechnen. Die Ursache wird im Einzelfall geprüft."] },
+    { title: "4. Nacherfüllung und weitere Rechte", paragraphs: ["Bei einem berechtigten Mangel erhält NORDIKA Container grundsätzlich Gelegenheit zur Prüfung und zur gesetzlich vorgesehenen Nacherfüllung. Je nach Fall kann dies Nachbesserung oder Ersatzlieferung sein. Schlägt die Nacherfüllung fehl oder liegt ein gesetzlicher Ausnahmefall vor, können weitere Rechte wie Minderung, Rücktritt oder Schadensersatz bestehen.", "Notwendige Transport-, Wege-, Arbeits- und Materialkosten richten sich nach den gesetzlichen Regeln. Organisieren Sie wegen Gewicht und Größe des Containers keinen Rücktransport ohne vorherige Abstimmung."] },
+    { title: "5. Verbraucher und Unternehmer", paragraphs: ["Zwingende Verbraucherrechte werden nicht eingeschränkt. Bei Verträgen mit Unternehmern können gesetzlich zulässige abweichende Regelungen im konkreten Angebot oder Vertrag getroffen werden. Bei beiderseitigen Handelsgeschäften ist § 377 HGB zu beachten. Die Verjährung richtet sich nach den gesetzlichen Vorschriften und einer gegebenenfalls wirksamen individuellen Vertragsregelung."] },
+  ],
+  accessibility: [
+    { title: "Unser Ziel", paragraphs: ["NORDIKA Container möchte Website, Formulare und zentrale Kundeninformationen möglichst verständlich, gut bedienbar und mit gängigen Hilfsmitteln nutzbar machen. Wir prüfen Inhalte und Funktionen fortlaufend und priorisieren Barrieren, die den Zugang zu Produkt-, Liefer- oder Vertragsinformationen erschweren."] },
+    { title: "Barriere melden", paragraphs: [`Wenn Sie eine Seite, ein Formular oder eine Information nicht nutzen können, schreiben Sie an ${SITE.email} oder rufen Sie ${SITE.phone} an. Nennen Sie möglichst die betroffene Seite, das verwendete Gerät und Browserprogramm, ein eingesetztes Hilfsmittel sowie die benötigte Information.`] },
+    { title: "Alternative Unterstützung", paragraphs: ["Soweit möglich, stellen wir wichtige Informationen in einer alternativen Form bereit oder unterstützen bei der Nutzung eines Formulars. Hinweise werden geprüft und in die weitere technische und redaktionelle Verbesserung einbezogen."] },
+    { title: "Keine Einschränkung Ihrer Rechte", paragraphs: ["Diese Erklärung beschreibt unseren derzeitigen Verbesserungsansatz. Gesetzliche Ansprüche und anwendbare Beschwerdemöglichkeiten bleiben davon unberührt."] },
   ],
 };
 
@@ -153,5 +194,81 @@ export function getLegalCopy(locale: Locale, key: RouteKey): LegalCopy | undefin
 }
 
 export function LegalPage({ locale, copy }: { locale: Locale; copy: LegalCopy }) {
-  return <main><Breadcrumbs locale={locale} items={[{ label: copy.title }]} /><PageHero eyebrow={copy.eyebrow} title={copy.title} intro={copy.intro} /><article className="section-space bg-white"><div className="container-shell max-w-4xl">{copy.sections.map((section, index) => <section key={`${section.title}-${index}`} className="border-b border-zinc-200 py-8 first:pt-0 last:border-0"><h2 className="text-2xl font-extrabold">{section.title}</h2>{section.paragraphs.map((paragraph) => <p key={paragraph} className="mt-4 whitespace-pre-line leading-8 text-zinc-600">{paragraph}</p>)}{section.bullets && <ul className="mt-6 grid gap-3 sm:grid-cols-2">{section.bullets.map((bullet) => <li key={bullet} className="flex items-start gap-3"><span className="mt-1 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[#ffb33e]"><Check className="h-3 w-3 text-[#092b4e]" /></span><span>{bullet}</span></li>)}</ul>}</section>)}<aside className="mt-10 bg-zinc-100 p-7"><h2 className="text-2xl font-extrabold">{ui[locale].related}</h2><div className="mt-5 grid gap-3 sm:grid-cols-3">{copy.related.map((key) => <Link key={key} href={href(locale, key)} className="inline-flex items-center justify-between gap-3 bg-white px-4 py-3 font-bold text-primary hover:bg-secondary">{titles[locale][key]}<ArrowRight className="h-4 w-4 shrink-0" /></Link>)}</div></aside></div></article></main>;
+  const labels = ui[locale];
+
+  return (
+    <main>
+      <Breadcrumbs locale={locale} items={[{ label: copy.title }]} />
+      <PageHero eyebrow={copy.eyebrow} title={copy.title} intro={copy.intro} />
+      <article className="section-space bg-white">
+        <div className="container-shell max-w-6xl">
+          <aside className="overflow-hidden bg-primary text-white shadow-xl shadow-primary/10">
+            <div className="grid gap-7 px-6 py-7 md:grid-cols-[1fr_auto] md:items-center md:px-9">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-secondary">NORDIKA Container</p>
+                <h2 className="mt-2 text-2xl font-extrabold">{labels.helpTitle}</h2>
+                <p className="mt-2 max-w-2xl leading-7 text-white/75">{labels.helpText}</p>
+              </div>
+              <div className="flex flex-col gap-3 sm:flex-row md:flex-col lg:flex-row">
+                <a href={`tel:${SITE.phoneHref}`} className="inline-flex min-h-12 items-center justify-center gap-2 border border-white/20 px-4 font-bold transition hover:border-secondary hover:text-secondary">
+                  <Phone aria-hidden="true" className="h-4 w-4" />
+                  {SITE.phone}
+                </a>
+                <a href={`mailto:${SITE.email}`} className="inline-flex min-h-12 items-center justify-center gap-2 bg-secondary px-4 font-bold text-primary transition hover:bg-white">
+                  <Mail aria-hidden="true" className="h-4 w-4" />
+                  {SITE.email}
+                </a>
+              </div>
+            </div>
+          </aside>
+
+          <div className="mt-10 grid gap-10 lg:grid-cols-[16rem_minmax(0,1fr)] lg:items-start">
+            <nav aria-label={labels.contents} className="border border-zinc-200 bg-zinc-50 p-5 lg:sticky lg:top-28">
+              <div className="flex items-center gap-2 text-sm font-black uppercase tracking-[0.16em] text-primary">
+                <FileText aria-hidden="true" className="h-4 w-4 text-secondary" />
+                {labels.contents}
+              </div>
+              <ol className="mt-5 grid gap-1">
+                {copy.sections.map((section, index) => (
+                  <li key={`${section.title}-nav`}>
+                    <a href={`#section-${index + 1}`} className="group flex gap-3 border-l-2 border-zinc-200 px-3 py-2.5 text-sm font-semibold leading-5 text-zinc-600 transition hover:border-secondary hover:bg-white hover:text-primary">
+                      <span className="text-xs font-black text-zinc-400 group-hover:text-secondary">{String(index + 1).padStart(2, "0")}</span>
+                      <span>{section.title}</span>
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            </nav>
+
+            <div className="min-w-0">
+              <div className="grid gap-5">
+                {copy.sections.map((section, index) => (
+                  <section id={`section-${index + 1}`} key={`${section.title}-${index}`} className="scroll-mt-32 border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+                    <div className="flex items-start gap-4">
+                      <span className="grid h-9 w-9 shrink-0 place-items-center bg-primary text-xs font-black text-secondary">{String(index + 1).padStart(2, "0")}</span>
+                      <h2 className="pt-1 text-2xl font-extrabold leading-tight text-primary">{section.title}</h2>
+                    </div>
+                    <div className="mt-5 border-t border-zinc-100 pt-1">
+                      {section.paragraphs.map((paragraph) => <p key={paragraph} className="mt-4 whitespace-pre-line leading-8 text-zinc-600">{paragraph}</p>)}
+                      {section.bullets && <ul className="mt-6 grid gap-3 sm:grid-cols-2">{section.bullets.map((bullet) => <li key={bullet} className="flex items-start gap-3"><span className="mt-1 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-secondary"><Check aria-hidden="true" className="h-3 w-3 text-primary" /></span><span className="leading-7 text-zinc-700">{bullet}</span></li>)}</ul>}
+                    </div>
+                  </section>
+                ))}
+              </div>
+
+              <aside className="mt-8 bg-zinc-100 p-7 sm:p-8">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <h2 className="text-2xl font-extrabold text-primary">{labels.related}</h2>
+                  <Link href={href(locale, "contact")} className="inline-flex items-center gap-2 font-bold text-primary underline decoration-secondary decoration-2 underline-offset-4">
+                    {labels.contactPage}<ArrowRight aria-hidden="true" className="h-4 w-4" />
+                  </Link>
+                </div>
+                <div className="mt-5 grid gap-3 sm:grid-cols-3">{copy.related.map((key) => <Link key={key} href={href(locale, key)} className="inline-flex items-center justify-between gap-3 bg-white px-4 py-3 font-bold text-primary transition hover:bg-secondary">{titles[locale][key]}<ArrowRight aria-hidden="true" className="h-4 w-4 shrink-0" /></Link>)}</div>
+              </aside>
+            </div>
+          </div>
+        </div>
+      </article>
+    </main>
+  );
 }
